@@ -1,0 +1,1701 @@
+<title>Francis Turbine Cutaway</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+/* ==================================================================
+   tokens -- bare :root is the complete light palette
+   ================================================================== */
+:root{
+  --bg:#E4E7E9; --bg-far:#C9D1D6; --bg-near:#F1F3F4;
+  --panel:rgba(255,255,255,.82); --panel-solid:#F4F6F7; --panel-edge:#BFC8CE;
+  --ink:#0F1720; --ink-2:#4C5865; --ink-3:#77838E;
+  --gold:#8F5E12; --gold-bright:#A9711A;
+  --teal:#106E78; --coral:#A93B2B; --violet:#4B4FA6;
+  --line:#C6CDD2; --line-soft:#D6DCDF;
+  --shadow:0 1px 2px rgba(15,23,32,.10),0 12px 34px rgba(15,23,32,.14);
+  --grid:rgba(15,23,32,.055);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#0B1221; --bg-far:#070C16; --bg-near:#18243D;
+    --panel:rgba(14,21,37,.80); --panel-solid:#111A2C; --panel-edge:#25324B;
+    --ink:#E2E8F0; --ink-2:#9FADC0; --ink-3:#6B7A90;
+    --gold:#F5B642; --gold-bright:#FFCB6B;
+    --teal:#2DD4BF; --coral:#FF6F61; --violet:#8B8CF0;
+    --line:#24314A; --line-soft:#1B2539;
+    --shadow:0 1px 2px rgba(0,0,0,.5),0 18px 46px rgba(0,0,0,.55);
+    --grid:rgba(226,232,240,.05);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0B1221; --bg-far:#070C16; --bg-near:#18243D;
+  --panel:rgba(14,21,37,.80); --panel-solid:#111A2C; --panel-edge:#25324B;
+  --ink:#E2E8F0; --ink-2:#9FADC0; --ink-3:#6B7A90;
+  --gold:#F5B642; --gold-bright:#FFCB6B;
+  --teal:#2DD4BF; --coral:#FF6F61; --violet:#8B8CF0;
+  --line:#24314A; --line-soft:#1B2539;
+  --shadow:0 1px 2px rgba(0,0,0,.5),0 18px 46px rgba(0,0,0,.55);
+  --grid:rgba(226,232,240,.05);
+}
+
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0; background:var(--bg); color:var(--ink);
+  font-family:"IBM Plex Sans",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+  font-size:14px; line-height:1.55; overflow:hidden;
+  -webkit-font-smoothing:antialiased;
+}
+h1,h2,h3{margin:0; font-family:Oswald,"IBM Plex Sans",sans-serif; font-weight:600; text-wrap:balance}
+button{font:inherit; color:inherit; background:none; border:0; cursor:pointer}
+:focus-visible{outline:2px solid var(--gold-bright); outline-offset:2px; border-radius:3px}
+
+/* ==================================================================
+   stage
+   ================================================================== */
+#stage{
+  position:fixed; inset:0;
+  background:
+    radial-gradient(120% 95% at 62% 28%, var(--bg-near) 0%, var(--bg) 46%, var(--bg-far) 100%);
+}
+#stage canvas{display:block; width:100%; height:100%}
+#loading{
+  position:fixed; inset:0; display:grid; place-content:center; gap:10px; justify-items:center;
+  background:var(--bg); z-index:50; transition:opacity .5s ease;
+}
+#loading .lbl{font-family:Oswald,sans-serif; letter-spacing:.22em; text-transform:uppercase;
+  font-size:12px; color:var(--ink-3)}
+#loading .bar{width:180px; height:2px; background:var(--line); overflow:hidden}
+#loading .bar i{display:block; height:100%; width:40%; background:var(--gold);
+  animation:sweep 1.1s cubic-bezier(.6,0,.4,1) infinite}
+@keyframes sweep{0%{transform:translateX(-110%)}100%{transform:translateX(360%)}}
+
+/* ==================================================================
+   chrome shells
+   ================================================================== */
+.shell{
+  background:var(--panel); backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px);
+  border:1px solid var(--panel-edge); box-shadow:var(--shadow);
+}
+.eyebrow{
+  font-family:Oswald,sans-serif; font-weight:500; font-size:10.5px;
+  letter-spacing:.2em; text-transform:uppercase; color:var(--ink-3);
+}
+
+/* ==================================================================
+   the rail -- every control lives here so the canvas keeps the rest
+   ================================================================== */
+#rail{
+  position:fixed; left:14px; top:14px; bottom:14px; width:328px; z-index:20;
+  display:flex; flex-direction:column; border-radius:2px;
+  transition:width .22s cubic-bezier(.4,0,.2,1);
+}
+@media (min-width:1560px){ #rail{width:352px} }
+
+#railhead{padding:12px 16px 10px; border-bottom:1px solid var(--line-soft); flex:0 0 auto; position:relative}
+#railhead h1{font-size:20px; line-height:1.05; letter-spacing:.005em; margin-top:2px}
+#railhead .sub{margin-top:5px; font-size:11px; line-height:1.45; color:var(--ink-2); padding-right:26px}
+#railhead .sub b{color:var(--ink); font-weight:600}
+#railstub{display:none}
+
+#railtoggle{
+  position:absolute; right:9px; top:10px; width:24px; height:24px; border-radius:2px;
+  border:1px solid var(--panel-edge); transition:border-color .18s ease;
+}
+#railtoggle:hover{border-color:var(--gold)}
+#railtoggle::after{
+  content:""; position:absolute; left:9px; top:7px; width:7px; height:7px;
+  border-left:1.5px solid var(--ink-2); border-bottom:1.5px solid var(--ink-2);
+  transform:rotate(45deg); transition:transform .2s ease;
+}
+#railtoggle[aria-expanded="false"]::after{transform:rotate(-135deg); left:6px}
+
+#stepper{display:flex; gap:2px; padding:8px 16px; flex:0 0 auto; border-bottom:1px solid var(--line-soft)}
+#stepper button{
+  flex:1; height:22px; position:relative; border-radius:2px;
+  font-family:"IBM Plex Mono",monospace; font-size:9.5px; color:var(--ink-3);
+  display:grid; place-items:center; transition:color .18s ease, background .18s ease;
+}
+#stepper button::after{
+  content:""; position:absolute; left:2px; right:2px; bottom:1px; height:2px;
+  background:var(--line); transition:background .18s ease;
+}
+#stepper button:hover{color:var(--ink); background:var(--line-soft)}
+#stepper button[aria-current="true"]{color:var(--gold-bright); font-weight:600}
+#stepper button[aria-current="true"]::after{background:var(--gold)}
+#stepper button.seen::after{background:var(--ink-3)}
+
+/* ---- chapter body ------------------------------------------- */
+#chapter{flex:1 1 auto; min-height:90px; overflow-y:auto; overscroll-behavior:contain; padding:12px 16px 14px}
+#chapter::-webkit-scrollbar{width:6px}
+#chapter::-webkit-scrollbar-thumb{background:var(--line); border-radius:4px}
+#chapter h2{font-size:16px; line-height:1.16; margin:4px 0 8px; letter-spacing:.01em; text-transform:uppercase}
+#chapter .num{font-family:"IBM Plex Mono",monospace; font-size:10px; color:var(--gold-bright); letter-spacing:.1em; font-weight:600}
+#chapter p{margin:0 0 9px; font-size:12.5px; line-height:1.5; color:var(--ink-2)}
+#chapter p strong{color:var(--ink); font-weight:600}
+#chapter .term{color:var(--ink); font-weight:600; border-bottom:1px dotted var(--gold); padding-bottom:1px}
+#chapter ul{margin:0 0 10px; padding-left:15px; font-size:12.5px; line-height:1.5; color:var(--ink-2)}
+#chapter li{margin-bottom:4px}
+#chapter li::marker{color:var(--gold)}
+
+.eq{
+  font-family:"IBM Plex Mono",monospace; font-size:11.5px; color:var(--ink);
+  background:var(--line-soft); border-left:2px solid var(--gold);
+  padding:7px 10px; margin:0 0 10px; overflow-x:auto; white-space:nowrap;
+}
+.eq .why{display:block; font-size:10px; line-height:1.45; color:var(--ink-3); white-space:normal; margin-top:4px}
+
+.figure{margin:0 0 11px; border:1px solid var(--line); background:var(--panel-solid); padding:8px}
+.figure figcaption{font-size:10px; color:var(--ink-3); margin-top:6px; line-height:1.4; border-top:1px solid var(--line-soft); padding-top:5px}
+.figure svg{display:block; width:100%; height:auto; overflow:hidden}
+
+/* ---- instruments -------------------------------------------- */
+#instruments{flex:0 0 auto; padding:9px 16px 8px; border-top:1px solid var(--line-soft)}
+#gatectl{display:flex; flex-direction:column; gap:1px; margin-bottom:7px}
+#gatectl .row{display:flex; align-items:baseline; justify-content:space-between}
+#gatectl output{
+  font-family:"IBM Plex Mono",monospace; font-size:14px; font-weight:600;
+  color:var(--gold-bright); font-variant-numeric:tabular-nums;
+}
+input[type=range]{-webkit-appearance:none; appearance:none; width:100%; height:16px; background:none; cursor:pointer}
+input[type=range]::-webkit-slider-runnable-track{height:3px; background:var(--line); border-radius:2px}
+input[type=range]::-moz-range-track{height:3px; background:var(--line); border-radius:2px}
+input[type=range]::-webkit-slider-thumb{
+  -webkit-appearance:none; width:13px; height:13px; margin-top:-5px; border-radius:50%;
+  background:var(--gold); border:2px solid var(--panel-solid);
+}
+input[type=range]::-moz-range-thumb{width:13px; height:13px; border-radius:50%; background:var(--gold); border:2px solid var(--panel-solid)}
+
+#gauges{display:grid; grid-template-columns:repeat(4,1fr); gap:1px; background:var(--line-soft)}
+.gauge{background:var(--panel-solid); padding:4px 5px 5px; display:flex; flex-direction:column; gap:0}
+.gauge .k{font-family:Oswald,sans-serif; font-size:8px; letter-spacing:.11em; text-transform:uppercase; color:var(--ink-3); white-space:nowrap}
+.gauge .v{
+  font-family:"IBM Plex Mono",monospace; font-size:12.5px; font-weight:500; line-height:1.35;
+  font-variant-numeric:tabular-nums; letter-spacing:-.02em; white-space:nowrap;
+}
+.gauge .v small{font-size:8.5px; color:var(--ink-3); font-weight:400; margin-left:2px}
+.gauge.hero .v{color:var(--gold-bright); font-weight:600}
+
+/* ---- chips: the whole view menu in two rows ------------------ */
+#chips{flex:0 0 auto; padding:8px 16px; border-top:1px solid var(--line-soft); display:flex; flex-direction:column; gap:5px}
+.chiprow{display:flex; gap:4px; align-items:stretch}
+.chip{position:relative; flex:1 1 auto; cursor:pointer; min-width:0}
+.chip input{position:absolute; opacity:0; width:0; height:0}
+.chip span{
+  display:block; text-align:center; padding:4px 2px; border:1px solid var(--panel-edge); border-radius:2px;
+  font-family:Oswald,sans-serif; font-size:10px; letter-spacing:.07em; text-transform:uppercase;
+  color:var(--ink-3); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+  transition:all .16s ease;
+}
+.chip:hover span{color:var(--ink); border-color:var(--ink-3)}
+.chip input:checked + span{background:var(--gold); border-color:var(--gold); color:#0B1221; font-weight:500}
+.chip input:focus-visible + span{outline:2px solid var(--gold-bright); outline-offset:1px}
+
+.seg{display:flex; border:1px solid var(--panel-edge); border-radius:2px; overflow:hidden; flex:1 1 auto}
+.seg button{
+  flex:1; padding:4px 2px; font-family:Oswald,sans-serif; font-size:10px;
+  letter-spacing:.07em; text-transform:uppercase; color:var(--ink-3); transition:all .16s ease;
+}
+.seg button:hover{color:var(--ink); background:var(--line-soft)}
+.seg button[aria-pressed="true"]{background:var(--gold); color:#0B1221; font-weight:500}
+#legend{display:flex; align-items:center; gap:6px; font-size:9.5px; color:var(--ink-3)}
+#legend .ramp{flex:1; height:5px; border-radius:1px}
+
+/* ---- footer -------------------------------------------------- */
+#railfoot{
+  flex:0 0 auto; display:flex; gap:6px; align-items:center; position:relative;
+  padding:8px 16px; border-top:1px solid var(--line-soft);
+}
+.btn{
+  border:1px solid var(--panel-edge); padding:5px 10px; border-radius:2px;
+  font-family:Oswald,sans-serif; font-size:10.5px; letter-spacing:.09em; text-transform:uppercase;
+  transition:border-color .18s ease, color .18s ease, background .18s ease; white-space:nowrap;
+}
+.btn:hover{border-color:var(--gold); color:var(--gold-bright)}
+.btn[disabled]{opacity:.35; cursor:not-allowed}
+.btn[disabled]:hover{border-color:var(--panel-edge); color:inherit}
+.btn.primary{background:var(--gold); border-color:var(--gold); color:#0B1221; font-weight:500}
+.btn.primary:hover{background:var(--gold-bright); border-color:var(--gold-bright); color:#0B1221}
+#railfoot .spacer{flex:1}
+#tourbar{position:absolute; left:0; right:0; bottom:0; height:2px; background:var(--gold); transform-origin:0 50%; transform:scaleX(0)}
+
+#note{
+  flex:0 0 auto; padding:7px 16px 9px; border-top:1px solid var(--line-soft);
+  font-size:9.5px; line-height:1.4; color:var(--ink-3);
+}
+#note kbd{
+  font-family:"IBM Plex Mono",monospace; font-size:9px; border:1px solid var(--panel-edge);
+  border-bottom-width:2px; border-radius:3px; padding:0 3px; color:var(--ink-2);
+}
+
+/* ==================================================================
+   collapsed -- hand the whole window to the machine
+   ================================================================== */
+@media (min-width:861px){
+  #rail.collapsed{width:34px}
+  #rail.collapsed > *:not(#railhead){display:none}
+  #rail.collapsed #railhead{padding:8px 0; border-bottom:0; height:100%}
+  #rail.collapsed #railhead .eyebrow,
+  #rail.collapsed #railhead h1,
+  #rail.collapsed #railhead .sub{display:none}
+  #rail.collapsed #railtoggle{position:static; margin:0 auto 10px}
+  #rail.collapsed #railstub{
+    display:block; writing-mode:vertical-rl; margin:0 auto;
+    font-family:Oswald,sans-serif; font-size:10px; letter-spacing:.18em;
+    text-transform:uppercase; color:var(--ink-3);
+  }
+}
+
+/* ==================================================================
+   short windows -- give the reading column back its height
+   ================================================================== */
+@media (max-height:830px){
+  #railhead{padding:10px 16px 8px}
+  #railhead .sub{display:none}
+  #stepper{padding:6px 16px}
+  #instruments{padding:7px 16px 6px}
+  #chips{padding:6px 16px}
+  #railfoot{padding:6px 16px}
+  #note{display:none}
+}
+@media (max-height:660px){
+  #railhead h1{font-size:18px}
+  #gauges .gauge:nth-child(n+5){display:none}
+  #legend{display:none}
+}
+
+/* ==================================================================
+   narrow -- the rail becomes a sheet along the bottom
+   ================================================================== */
+@media (max-width:860px){
+  body{font-size:13px}
+  #rail{
+    left:0; right:0; top:auto; bottom:0; width:auto; max-height:64vh;
+    border-left:0; border-right:0; border-bottom:0; border-radius:0;
+  }
+  #railhead{padding:9px 14px 7px}
+  #railhead h1{font-size:18px}
+  #railhead .sub{display:none}
+  #stepper{padding:7px 14px}
+  #chapter{padding:11px 14px 12px; min-height:118px}
+  #instruments,#chips,#railfoot,#note{padding-left:14px; padding-right:14px}
+  #gauges{grid-template-columns:repeat(4,1fr)}
+  #note{display:none}
+  #rail.collapsed #chapter,
+  #rail.collapsed #stepper,
+  #rail.collapsed #railfoot{display:none}
+}
+@media (prefers-reduced-motion:reduce){
+  *{animation-duration:.001ms !important; transition-duration:.001ms !important}
+}
+</style>
+
+<div id="stage"></div>
+
+<div id="loading"><div class="lbl">Building runner geometry</div><div class="bar"><i></i></div></div>
+
+<!-- =================== the rail: text + every control ============ -->
+<section id="rail" class="shell" aria-label="Working principle walkthrough and controls">
+  <header id="railhead">
+    <button id="railtoggle" aria-expanded="true" aria-controls="chapter" aria-label="Collapse the panel"></button>
+    <span id="railstub">Francis turbine</span>
+    <div class="eyebrow">Reaction turbine &middot; mixed flow</div>
+    <h1>Francis Turbine</h1>
+    <p class="sub">Water arrives with <b>pressure</b> and leaves with almost nothing.
+      Follow it through all nine stages of the machine that takes the difference.</p>
+  </header>
+
+  <nav id="stepper" aria-label="Stages"></nav>
+
+  <div id="chapter" tabindex="0"></div>
+
+  <div id="instruments" aria-label="Operating point">
+    <div id="gatectl">
+      <div class="row">
+        <label class="eyebrow" for="gate">Guide vane opening</label>
+        <output id="gateval" for="gate">100%</output>
+      </div>
+      <input id="gate" type="range" min="12" max="100" value="100" step="1"
+             aria-describedby="gatehint">
+    </div>
+    <div id="gauges">
+      <div class="gauge hero"><span class="k">Output</span><span class="v" id="g-p">21.3<small>MW</small></span></div>
+      <div class="gauge"><span class="k">Flow</span><span class="v" id="g-q">20.0<small>m³/s</small></span></div>
+      <div class="gauge"><span class="k">Head</span><span class="v" id="g-head">120<small>m</small></span></div>
+      <div class="gauge"><span class="k">Speed</span><span class="v" id="g-n">300<small>rpm</small></span></div>
+      <div class="gauge"><span class="k">Torque</span><span class="v" id="g-t">700<small>kN·m</small></span></div>
+      <div class="gauge"><span class="k">Hyd. eff</span><span class="v" id="g-e">93.4<small>%</small></span></div>
+      <div class="gauge"><span class="k">Swirl out</span><span class="v" id="g-s">−3.9<small>m/s</small></span></div>
+      <div class="gauge"><span class="k">Nₛ metric</span><span class="v" id="g-ns">112</span></div>
+    </div>
+    <p id="gatehint" hidden>The only thing an operator moves. Everything else follows from it.</p>
+  </div>
+
+  <div id="chips" aria-label="View controls">
+    <div class="chiprow">
+      <label class="chip" title="Cut the housing open on the section plane">
+        <input type="checkbox" id="t-cut" checked><span>Section</span></label>
+      <label class="chip" title="Fade the parts the current stage is not about">
+        <input type="checkbox" id="t-ghost" checked><span>Ghost</span></label>
+      <label class="chip" title="Show the water">
+        <input type="checkbox" id="t-flow" checked><span>Water</span></label>
+      <label class="chip" title="Move with the runner, into the rotating frame">
+        <input type="checkbox" id="t-ride"><span>Ride</span></label>
+    </div>
+    <div class="chiprow">
+      <div class="seg" role="group" aria-label="Colour the water by">
+        <button id="m-speed" aria-pressed="true">Speed</button>
+        <button id="m-press" aria-pressed="false">Pressure</button>
+      </div>
+      <label class="chip" style="flex:0 0 68px" title="Turn the camera slowly">
+        <input type="checkbox" id="t-spin"><span>Orbit</span></label>
+      <button class="btn" id="reset" style="flex:0 0 62px; padding:4px 6px">Reset</button>
+    </div>
+    <div id="legend"><span id="leg-lo">slow</span><span class="ramp" id="leg-ramp"></span><span id="leg-hi">38 m/s</span></div>
+  </div>
+
+  <footer id="railfoot">
+    <button class="btn" id="prev">Back</button>
+    <button class="btn primary" id="next">Next stage</button>
+    <span class="spacer"></span>
+    <button class="btn" id="tour" aria-pressed="false">Auto</button>
+    <div id="tourbar"></div>
+  </footer>
+
+  <p id="note">
+    Drag to orbit &middot; scroll to zoom &middot; <kbd>←</kbd><kbd>→</kbd> to step.
+    Runner and the water crossing it run at <b>1:10</b> of real time. Flow paths are an
+    analytic model from the velocity triangles, not a CFD solution.
+  </p>
+</section>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+/* ======================================================================
+   Francis Turbine Cutaway
+   ----------------------------------------------------------------------
+   One 21.9 MW unit, drawn to scale in metres and driven by a small
+   one-dimensional Euler turbomachinery model.  The guide-vane slider is
+   the only free input; discharge, velocity triangles, efficiency, power,
+   the energy grade line, the rendered vane angle and every water path in
+   the scene are derived from it.
+
+   The flow paths are analytic streamlines consistent with those
+   triangles.  They are a teaching model, not a CFD solution.
+   ====================================================================== */
+"use strict";
+
+const G = 9.81, RHO = 1000;
+
+/* ---------------------------------------------------------------- plant
+   50 Hz, 20-pole generator -> the runner is locked to 300 rpm.        */
+const P = {
+  H: 120,          // net head, m
+  Qr: 20,          // discharge at full gate, m^3/s
+  N: 300,          // runner speed, rpm
+  D1: 2.20,        // runner inlet diameter, m
+  b0: 0.28,        // distributor height, m
+  D2: 1.80,        // runner outlet diameter, m
+  Dh: 0.66,        // runner hub diameter at outlet, m
+  gBep: 0.88,      // gate opening at best efficiency
+  Zdist: 3.40,     // distributor centreline above tailwater, m
+  Zexit: 2.50,     // runner outlet above tailwater, m
+  Acas: 1.887,     // spiral casing inlet area, m^2
+  Adt: 5.87,       // draft tube outlet area, m^2
+  etaMech: 0.988,
+  etaGen: 0.982
+};
+P.omega = 2 * Math.PI * P.N / 60;              // 31.42 rad/s
+P.u1 = P.omega * P.D1 / 2;                     // 34.56 m/s
+P.u2 = P.omega * P.D2 / 2;                     // 28.27 m/s
+P.A1 = Math.PI * P.D1 * P.b0;                  // 1.935 m^2
+P.A2 = Math.PI / 4 * (P.D2 * P.D2 - P.Dh * P.Dh); // 2.203 m^2
+/* Runner outlet blade angle is fixed by the design point: it is the angle
+   that leaves zero swirl at best efficiency.                           */
+P.tanB2 = (P.Qr * P.gBep / P.A2) / P.u2;       // -> beta2 = 15.8 deg
+
+/* Empirical efficiency hill.  Peak near 88% gate, collapsing below 45%
+   where the runner outlet swirl runs away.                             */
+function hydraulicEff(g) {
+  const off = g - P.gBep;
+  const low = Math.max(0, 0.45 - g);
+  return Math.max(0.18, 0.945 - 0.75 * off * off - 1.2 * low * low);
+}
+
+/* ------------------------------------------------------------- the model
+   Everything the page shows comes out of this one function.            */
+function solve(g) {
+  const Q   = P.Qr * g;
+  const Vm1 = Q / P.A1;
+  const Vm2 = Q / P.A2;
+  const eta = hydraulicEff(g);
+  /* Outlet: relative flow follows the blade -> swirl appears off-design. */
+  const Vu2 = P.u2 - Vm2 / P.tanB2;
+  /* Inlet swirl is whatever Euler needs to deliver the head that the
+     hill curve says this gate opening actually converts.                */
+  const Vu1 = (G * P.H * eta + P.u2 * Vu2) / P.u1;
+
+  const a1  = Math.atan2(Vm1, Vu1);            // absolute flow angle, rad
+  const b1  = Math.atan2(Vm1, Vu1 - P.u1);     // relative flow angle, rad
+  const b2  = Math.atan2(Vm2, P.u2 - Vu2);
+  const V1  = Math.hypot(Vu1, Vm1);
+  const V2  = Math.hypot(Vu2, Vm2);
+  const W1  = Math.hypot(Vu1 - P.u1, Vm1);
+  const W2  = Math.hypot(P.u2 - Vu2, Vm2);
+
+  const He   = (P.u1 * Vu1 - P.u2 * Vu2) / G;  // Euler head, m
+  const Psh  = RHO * G * Q * P.H * eta;        // shaft power, W
+  const Pel  = Psh * P.etaMech * P.etaGen;
+  const torque = Psh / P.omega;
+
+  /* ---- energy grade line, all heads in metres of water --------------
+     station: reservoir / casing inlet / stay ring / runner inlet /
+              runner outlet / draft tube outlet / tailrace              */
+  const Vcas = Q / P.Acas;
+  const rSV = 1.82, bSV = 0.35;
+  const VuS = Vu1 * (P.D1 / 2) / rSV, VmS = Q / (2 * Math.PI * rSV * bSV);
+  const Vsv = Math.hypot(VuS, VmS);
+  const Vdt = Q / P.Adt;
+  const hf1 = 1.8 * g * g, hf2 = 0.4 * g * g;   // penstock / distributor loss
+  const hdt = 0.30 + 0.05 * V2 * V2 / (2 * G);  // draft tube loss
+
+  const vh = v => v * v / (2 * G);
+  const st = [];
+  const push = (name, z, total, v) => st.push({ name, z, v, total, p: total - z - vh(v) });
+  push("Reservoir",   P.H,       P.H,                    0);
+  push("Casing in",   P.Zdist,   P.H - hf1,              Vcas);
+  push("Stay ring",   P.Zdist,   P.H - hf1 - 0.2,        Vsv);
+  push("Runner in",   P.Zdist,   P.H - hf1 - hf2,        V1);
+  push("Runner out",  P.Zexit,   P.H - hf1 - hf2 - He,   V2);
+  push("Draft out",   0.35,      P.H - hf1 - hf2 - He - hdt, Vdt);
+  push("Tailrace",    0,         P.H - hf1 - hf2 - He - hdt, 0.4);
+
+  return { g, Q, Vm1, Vm2, Vu1, Vu2, a1, b1, b2, V1, V2, W1, W2,
+           eta, He, Psh, Pel, torque, st };
+}
+
+/* Blade inlet angle is frozen at the design point: this is what the
+   incidence at other gate openings is measured against.               */
+const BEP = solve(P.gBep);
+const BETA1_BLADE = BEP.b1;
+
+/* ======================================================================
+   1.  GEOMETRY CONSTANTS  (metres, axis = +Y, water swirls about +Y)
+   ====================================================================== */
+const R1 = P.D1 / 2, R2 = P.D2 / 2, RHUB = P.Dh / 2, B0 = P.b0;
+const RGV = 1.45, GV_N = 20, GV_C = 0.44;      // guide vanes (pitch 0.456)
+const RSV = 1.95, SV_N = 10, SV_C = 0.52;      // stay vanes
+const RCAS = 2.32;                              // stay ring outer / casing throat
+const RT0 = 0.80, SLOT = 0.30;                  // casing tube radius, slot half-angle
+const RSLOT = RCAS - 0.10 * RT0;                // radius of the casing discharge lip
+const COVER_R0 = 1.28, COVER_R1 = RCAS + 0.04;  // head cover / bottom ring span
+const BLADES = 15;
+const WRAP_B = 1.55, WRAP_C = 0.85;             // blade wrap: band -> crown, rad
+const CROWN_TOP = 0.28, HUB_NOSE = -0.98, BAND_Y = -0.86;
+const FLOOR_Y = 1.10;
+const DT_TOP = -0.90, DT_KNEE = -3.00, DT_ELB = 1.75, DT_OUT = 5.60;
+
+/* ======================================================================
+   2.  SCENE, RENDERER, ENVIRONMENT
+   ====================================================================== */
+const stageEl = document.getElementById("stage");
+const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: "high-performance" });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.outputEncoding = THREE.sRGBEncoding;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 0.95;
+renderer.physicallyCorrectLights = true;
+renderer.localClippingEnabled = true;
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+stageEl.appendChild(renderer.domElement);
+
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(38, 1, 0.05, 400);
+let rideAngle = 0;                           // camera spin for the rotating-frame view
+
+/* ---- studio environment, generated in-page (no external HDR) -------- */
+function buildEnvTexture() {
+  const env = new THREE.Scene();
+  const box = new THREE.BoxGeometry(1, 1, 1);
+  box.deleteAttribute("uv");
+  const room = new THREE.Mesh(box, new THREE.MeshStandardMaterial({
+    side: THREE.BackSide, color: new THREE.Color(0x2b3038).convertSRGBToLinear(),
+    roughness: 1, metalness: 0
+  }));
+  room.scale.set(34, 20, 34);
+  env.add(room);
+  const panel = (c, i, x, y, z, sx, sy, sz, rx, ry) => {
+    const m = new THREE.Mesh(box, new THREE.MeshBasicMaterial({
+      color: new THREE.Color(c).convertSRGBToLinear().multiplyScalar(i) }));
+    m.position.set(x, y, z); m.scale.set(sx, sy, sz);
+    m.rotation.set(rx || 0, ry || 0, 0);
+    env.add(m);
+  };
+  panel(0xffffff, 1.5, 0, 9.4, 0, 20, 0.4, 20);          // ceiling bank
+  panel(0xfff0d8, 1.1, -11, 2.5, 6, 0.4, 9, 12);          // warm side wall
+  panel(0xcfe8ff, 0.9, 11, 3.5, -5, 0.4, 10, 12);         // cool side wall
+  panel(0xffd9a0, 0.6, 3, -6.5, 7, 10, 0.4, 10);          // bounce off the pit floor
+  const pmrem = new THREE.PMREMGenerator(renderer);
+  pmrem.compileEquirectangularShader();
+  const tex = pmrem.fromScene(env, 0.04).texture;
+  pmrem.dispose();
+  room.geometry.dispose(); box.dispose();
+  return tex;
+}
+scene.environment = buildEnvTexture();
+
+/* ---- direct lights: a key overhead, a cool fill, a warm rim --------- */
+const key = new THREE.DirectionalLight(0xffffff, 1.55);
+key.position.set(6, 11, 7); scene.add(key);
+key.castShadow = true;
+key.shadow.mapSize.set(2048, 2048);
+key.shadow.bias = -0.0016;
+Object.assign(key.shadow.camera, { left: -9, right: 9, top: 9, bottom: -9, near: 1, far: 34 });
+key.shadow.camera.updateProjectionMatrix();
+const fill = new THREE.DirectionalLight(new THREE.Color(0xbcd6ff).convertSRGBToLinear(), 0.45);
+fill.position.set(-8, 3, -6); scene.add(fill);
+const rim = new THREE.DirectionalLight(new THREE.Color(0xffd9a0).convertSRGBToLinear(), 0.7);
+rim.position.set(-3, -5, 9); scene.add(rim);
+scene.add(new THREE.HemisphereLight(new THREE.Color(0xdfe9f5).convertSRGBToLinear(),
+  new THREE.Color(0x11161d).convertSRGBToLinear(), 0.22));
+
+/* ======================================================================
+   3.  CAMERA CONTROL  (compact orbit: drag, wheel, pinch)
+   ====================================================================== */
+const orbit = {
+  target: new THREE.Vector3(0, -0.2, 0),
+  gTarget: new THREE.Vector3(0, -0.2, 0),
+  r: 12, gR: 12, theta: 0.85, gTheta: 0.85, phi: 1.16, gPhi: 1.16,
+  spin: false, damp: 0.10
+};
+/* a narrow screen shows a much smaller slice of the scene, so stand back */
+let wasNarrow = innerWidth <= 860;
+function freeBand() {                    // canvas height the chrome leaves alone
+  const rail = document.getElementById("rail");
+  return Math.max(150, innerHeight - 64 - (rail ? rail.offsetHeight : 0));
+}
+const fitScale = () =>
+  innerWidth > 860 ? 1 : Math.min(2.6, Math.max(1, innerHeight * 0.86 / freeBand()));
+function goTo(pos, tgt, instant) {
+  const d = new THREE.Vector3().subVectors(pos, tgt);
+  orbit.gR = d.length() * fitScale();
+  orbit.gTheta = Math.atan2(d.x, d.z);
+  orbit.gPhi = Math.acos(THREE.MathUtils.clamp(d.y / orbit.gR, -1, 1));
+  orbit.gTarget.copy(tgt);
+  if (instant || REDUCED) {
+    orbit.r = orbit.gR; orbit.theta = orbit.gTheta; orbit.phi = orbit.gPhi;
+    orbit.target.copy(tgt);
+  }
+}
+function updateCamera(dt) {
+  if (orbit.spin) orbit.gTheta += dt * 0.13;
+  const k = 1 - Math.pow(1 - orbit.damp, dt * 60);
+  orbit.r += (orbit.gR - orbit.r) * k;
+  orbit.phi += (orbit.gPhi - orbit.phi) * k;
+  let dth = orbit.gTheta - orbit.theta;
+  orbit.theta += dth * k;
+  orbit.target.lerp(orbit.gTarget, k);
+  const s = Math.sin(orbit.phi), th = orbit.theta + rideAngle;
+  camera.position.set(
+    orbit.target.x + orbit.r * s * Math.sin(th),
+    orbit.target.y + orbit.r * Math.cos(orbit.phi),
+    orbit.target.z + orbit.r * s * Math.cos(th)
+  );
+  camera.lookAt(orbit.target);
+}
+(function bindPointer() {
+  const el = renderer.domElement;
+  let drag = null, pinch = 0;
+  const pts = new Map();
+  el.style.touchAction = "none";
+  el.addEventListener("pointerdown", e => {
+    pts.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    el.setPointerCapture(e.pointerId);
+    if (pts.size === 1) { drag = { x: e.clientX, y: e.clientY }; orbit.spin = false; spinBox.checked = false; }
+  });
+  el.addEventListener("pointermove", e => {
+    if (!pts.has(e.pointerId)) return;
+    pts.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    if (pts.size === 2) {
+      const [a, b] = [...pts.values()];
+      const d = Math.hypot(a.x - b.x, a.y - b.y);
+      if (pinch) orbit.gR = THREE.MathUtils.clamp(orbit.gR * pinch / d, 2.2, 42);
+      pinch = d; drag = null; return;
+    }
+    if (!drag) return;
+    orbit.gTheta -= (e.clientX - drag.x) * 0.0062;
+    orbit.gPhi = THREE.MathUtils.clamp(orbit.gPhi - (e.clientY - drag.y) * 0.0056, 0.10, Math.PI - 0.10);
+    drag = { x: e.clientX, y: e.clientY };
+  });
+  const end = e => { pts.delete(e.pointerId); if (pts.size < 2) pinch = 0; if (!pts.size) drag = null; };
+  el.addEventListener("pointerup", end);
+  el.addEventListener("pointercancel", end);
+  el.addEventListener("wheel", e => {
+    e.preventDefault();
+    orbit.gR = THREE.MathUtils.clamp(orbit.gR * (1 + Math.sign(e.deltaY) * 0.10), 2.2, 42);
+  }, { passive: false });
+})();
+
+/* ======================================================================
+   4.  GEOMETRY BUILDERS
+   ====================================================================== */
+/* Generic parametric surface.  fn(u, v, outVec3); wrap closes the grid. */
+function makeSurface(nu, nv, fn, wrapU, wrapV) {
+  const cu = wrapU ? nu : nu + 1, cv = wrapV ? nv : nv + 1;
+  const pos = new Float32Array(cu * cv * 3), t = new THREE.Vector3();
+  for (let i = 0; i < cu; i++) {
+    for (let j = 0; j < cv; j++) {
+      fn(i / nu, j / nv, t);
+      const o = (i * cv + j) * 3;
+      pos[o] = t.x; pos[o + 1] = t.y; pos[o + 2] = t.z;
+    }
+  }
+  const idx = [], iu = wrapU ? cu : cu - 1, iv = wrapV ? cv : cv - 1;
+  for (let i = 0; i < iu; i++) {
+    const i0 = i, i1 = (i + 1) % cu;
+    for (let j = 0; j < iv; j++) {
+      const j0 = j, j1 = (j + 1) % cv;
+      idx.push(i0 * cv + j0, i1 * cv + j0, i1 * cv + j1,
+               i0 * cv + j0, i1 * cv + j1, i0 * cv + j1);
+    }
+  }
+  const g = new THREE.BufferGeometry();
+  g.setAttribute("position", new THREE.BufferAttribute(pos, 3));
+  g.setIndex(idx);
+  g.computeVertexNormals();
+  return g;
+}
+/* Solid of revolution from a closed (r, y) profile. */
+function lathe(profile, seg) {
+  const pts = profile.map(p => new THREE.Vector2(p[0], p[1]));
+  return new THREE.LatheGeometry(pts, seg || 72);
+}
+/* Flat annular slab -- covers, rings, floors. */
+function ringSlab(r0, r1, y0, y1, seg) {
+  return lathe([[r0, y0], [r1, y0], [r1, y1], [r0, y1], [r0, y0]], seg || 72);
+}
+
+/* ---- spiral casing --------------------------------------------------
+   Tube radius falls as sqrt(remaining flow) and the centreline follows it
+   inward, so the tube always sits tangent to the stay ring.  A slot on
+   the inner face discharges into the distributor.                       */
+function voluteGeom() {
+  return makeSurface(210, 30, (u, v, t) => {
+    const th = u * Math.PI * 2 * 0.995;
+    const rt = RT0 * Math.sqrt(Math.max(0.010, 1 - u * 0.995));
+    const rc = RCAS + rt * 0.90;
+    const a = Math.PI + SLOT + v * (2 * Math.PI - 2 * SLOT);
+    const R = rc + rt * Math.cos(a);
+    t.set(R * Math.cos(th), rt * Math.sin(a), R * Math.sin(th));
+  }, false, false);
+}
+function caseRadius(th) {                       // used by the flow model
+  const u = th / (Math.PI * 2);
+  const rt = RT0 * Math.sqrt(Math.max(0.010, 1 - u * 0.995));
+  return { rt, rc: RCAS + rt * 0.90 };
+}
+
+/* ---- vane aerofoil --------------------------------------------------
+   Thick cambered section; pivot sits at 42% chord like a real gate.      */
+function vaneGeometry(chord, height, thick, camber) {
+  const N = 24, up = [], lo = [];
+  for (let i = 0; i <= N; i++) {
+    const x = i / N;
+    const yt = 5 * thick * chord * (0.2969 * Math.sqrt(x) - 0.1260 * x
+             - 0.3516 * x * x + 0.2843 * x ** 3 - 0.1036 * x ** 4);
+    const yc = camber * chord * 4 * x * (1 - x);
+    up.push([x * chord, yc + yt]); lo.push([x * chord, yc - yt]);
+  }
+  const s = new THREE.Shape();
+  s.moveTo(up[0][0], up[0][1]);
+  for (let i = 1; i < up.length; i++) s.lineTo(up[i][0], up[i][1]);
+  for (let i = lo.length - 1; i >= 0; i--) s.lineTo(lo[i][0], lo[i][1]);
+  s.closePath();
+  const g = new THREE.ExtrudeGeometry(s, { depth: height, bevelEnabled: false, curveSegments: 1 });
+  g.translate(-0.42 * chord, 0, -height / 2);
+  g.rotateX(-Math.PI / 2);                       // extrusion axis -> +Y
+  return g;
+}
+/* Chord along the flow: angle `a` is measured from the tangential. */
+function vaneYaw(phi, a) { return -(phi + a) - Math.PI / 2; }
+
+/* ---- runner blade ---------------------------------------------------
+   Mid-surface swept from the radial inlet to the axial outlet on a
+   quarter ellipse, wrapped backwards against the direction of rotation. */
+function bladeMid(m, s, out) {
+  const rIn = R1, yIn = -0.13 + 0.26 * s;
+  const rOut = 0.92 - 0.50 * s, yOut = -0.84 + 0.04 * s;
+  const c = Math.cos(m * Math.PI / 2), sn = Math.sin(m * Math.PI / 2);
+  const r = rOut + (rIn - rOut) * c;
+  const y = yIn - (yIn - yOut) * sn;
+  const th = -(WRAP_B + WRAP_C * s) * Math.pow(m, 1.15);
+  return out.set(r * Math.cos(th), y, r * Math.sin(th));
+}
+function bladeGeom() {
+  const NM = 26, NS = 14;
+  const a = new THREE.Vector3(), b = new THREE.Vector3(), c = new THREE.Vector3();
+  const du = new THREE.Vector3(), dv = new THREE.Vector3(), n = new THREE.Vector3();
+  return makeSurface(2 * NM, NS, (u, v, t) => {
+    const k = u * 2 * NM;
+    const m = k <= NM ? k / NM : (2 * NM - k) / NM;
+    const side = k <= NM ? 1 : -1;
+    const h = 0.006;
+    bladeMid(m, v, a);
+    bladeMid(Math.min(1, m + h), v, b);
+    bladeMid(m, Math.min(1, v + h), c);
+    du.subVectors(b, a); dv.subVectors(c, a);
+    n.crossVectors(du, dv).normalize();
+    if (m > 0.999) n.negate();                   // keep the sheet consistent at the TE
+    const th = 0.014 + 0.075 * Math.pow(Math.sin(Math.PI * Math.pow(m, 0.75)), 0.9);
+    t.copy(a).addScaledVector(n, side * th * 0.5);
+  }, true, false);
+}
+
+/* ---- draft tube -----------------------------------------------------
+   Cone, 90 degree elbow, diverging horizontal outlet.  The same path
+   carries the water particles, so the flow can never leave the liner.   */
+const DT_N = new THREE.Vector3(), DT_C = new THREE.Vector3();
+function dtPath(u, out) {
+  let ax, ay;
+  if (u < 0.40) {
+    const t = u / 0.40;
+    DT_C.set(0, DT_TOP + (DT_KNEE - DT_TOP) * t, 0);
+    DT_N.set(1, 0, 0);
+    ax = ay = 1.02 + 0.32 * t;
+  } else if (u < 0.72) {
+    const t = (u - 0.40) / 0.32, w = t * Math.PI / 2;
+    DT_C.set(DT_ELB * (1 - Math.cos(w)), DT_KNEE - DT_ELB * Math.sin(w), 0);
+    DT_N.set(Math.cos(w), Math.sin(w), 0);
+    ay = 1.34 - 0.29 * t; ax = 1.34 + 0.41 * t;
+  } else {
+    const t = (u - 0.72) / 0.28;
+    DT_C.set(DT_ELB + (DT_OUT - DT_ELB) * t, DT_KNEE - DT_ELB, 0);
+    DT_N.set(0, 1, 0);
+    ay = 1.05 - 0.23 * t; ax = 1.75 + 0.35 * t;
+  }
+  if (out) { out.ah = ay; out.aw = ax; }
+  return out;
+}
+const DT_SEC = { ah: 1, aw: 1 };
+function dtPoint(u, psi, frac, t) {
+  dtPath(u, DT_SEC);
+  const ch = Math.cos(psi) * DT_SEC.ah * frac, sw = Math.sin(psi) * DT_SEC.aw * frac;
+  t.set(DT_C.x + DT_N.x * ch, DT_C.y + DT_N.y * ch, DT_C.z + sw);
+  return t;
+}
+function draftTubeGeom() {
+  return makeSurface(80, 48, (u, v, t) => dtPoint(u, v * Math.PI * 2, 1, t), false, true);
+}
+
+/* ======================================================================
+   5.  ASSEMBLY
+   ====================================================================== */
+const clip = new THREE.Plane(new THREE.Vector3(0, 0, -1), 40);
+const parts = {};
+function mat(name, o, ghostable, clipped) {
+  const m = new THREE.MeshStandardMaterial(Object.assign({
+    side: THREE.DoubleSide, envMapIntensity: 1.0
+  }, o));
+  m.color.convertSRGBToLinear();          // r128 takes material colours as linear
+  if (clipped) m.clippingPlanes = [clip];
+  m.shadowSide = THREE.DoubleSide;
+  parts[name] = { mat: m, ghostable: !!ghostable, base: m.color.clone(), meshes: [] };
+  return m;
+}
+const M = {
+  casing:   mat("casing",   { color: 0x545B63, metalness: 0.62, roughness: 0.48 }, true, true),
+  cover:    mat("cover",    { color: 0x646C75, metalness: 0.58, roughness: 0.44 }, true, true),
+  stay:     mat("stay",     { color: 0x939BA3, metalness: 0.55, roughness: 0.38 }, true, true),
+  gv:       mat("gv",       { color: 0xCBD4DA, metalness: 0.42, roughness: 0.30 }, true, true),
+  runner:   mat("runner",   { color: 0xC08A45, metalness: 1.00, roughness: 0.24 }, true, false),
+  crown:    mat("crown",    { color: 0xA2762F, metalness: 1.00, roughness: 0.34 }, true, true),
+  linkage:  mat("linkage",  { color: 0x3E454D, metalness: 0.90, roughness: 0.34 }, true, true),
+  shaft:    mat("shaft",    { color: 0x4A5159, metalness: 0.92, roughness: 0.30 }, false, false),
+  draft:    mat("draft",    { color: 0x424850, metalness: 0.50, roughness: 0.66 }, true, true),
+  concrete: mat("concrete", { color: 0x2C3037, metalness: 0.02, roughness: 0.99 }, true, true),
+  gen:      mat("gen",      { color: 0x343A42, metalness: 0.72, roughness: 0.46 }, true, true),
+  person:   mat("person",   { color: 0x222A33, metalness: 0.10, roughness: 0.80 }, true, false)
+};
+for (const k in parts) { parts[k].mat.opacity = 1; }
+
+const machine = new THREE.Group();
+const runnerGrp = new THREE.Group();
+const gvGrp = new THREE.Group();
+machine.add(runnerGrp, gvGrp);
+scene.add(machine);
+
+function add(part, geo, group, x, y, z) {
+  const m = new THREE.Mesh(geo, M[part]);
+  m.castShadow = m.receiveShadow = true;
+  if (x !== undefined) m.position.set(x, y, z);
+  (group || machine).add(m);
+  parts[part].meshes.push(m);
+  return m;
+}
+
+/* ---- spiral casing + penstock --------------------------------------- */
+add("casing", voluteGeom());
+const rc0 = RCAS + RT0 * 0.90;
+const pen = new THREE.CylinderGeometry(RT0, RT0 * 1.06, 4.2, 44, 1, true);
+pen.rotateX(Math.PI / 2); pen.translate(rc0, 0, -2.1);
+add("casing", pen);
+const flange = new THREE.TorusGeometry(RT0 * 1.02, 0.075, 10, 52);
+flange.translate(rc0, 0, -0.18);
+add("casing", flange);
+const flange2 = flange.clone(); flange2.translate(0, 0, -1.7); add("casing", flange2);
+
+/* ---- covers, stay ring, distributor ---------------------------------- */
+add("cover", ringSlab(COVER_R0, COVER_R1, -0.30, -0.14));      // bottom ring
+add("cover", ringSlab(COVER_R0, COVER_R1, 0.14, 0.34));        // head cover plate
+add("cover", ringSlab(0.30, COVER_R0 + 0.02, 0.34, 0.52));     // inner cover
+add("cover", ringSlab(1.16, 1.44, 0.52, 0.86));                // gate operating rim
+
+const svGeo = vaneGeometry(SV_C, 0.30, 0.16, 0.035);
+for (let i = 0; i < SV_N; i++) {
+  const phi = i * 2 * Math.PI / SV_N + 0.15;
+  const m = add("stay", svGeo, machine, RSV * Math.cos(phi), 0, RSV * Math.sin(phi));
+  m.rotation.y = vaneYaw(phi, BEP.a1);
+}
+
+const gvGeo = vaneGeometry(GV_C, B0, 0.19, 0.05);
+const pinGeo = new THREE.CylinderGeometry(0.052, 0.052, 0.78, 14);
+pinGeo.translate(0, 0.40, 0);
+const leverGeo = new THREE.BoxGeometry(0.30, 0.045, 0.075);
+leverGeo.translate(0.15, 0, 0);
+const guideVanes = [];
+for (let i = 0; i < GV_N; i++) {
+  const phi = i * 2 * Math.PI / GV_N;
+  const pivot = new THREE.Group();
+  pivot.position.set(RGV * Math.cos(phi), 0, RGV * Math.sin(phi));
+  const v = new THREE.Mesh(gvGeo, M.gv); pivot.add(v); parts.gv.meshes.push(v);
+  const p = new THREE.Mesh(pinGeo, M.linkage); pivot.add(p); parts.linkage.meshes.push(p);
+  const l = new THREE.Mesh(leverGeo, M.linkage); l.position.y = 0.90; pivot.add(l);
+  parts.linkage.meshes.push(l);
+  p.castShadow = l.castShadow = true;
+  gvGrp.add(pivot);
+  guideVanes.push({ pivot, phi });
+}
+const regRing = new THREE.TorusGeometry(RGV + 0.30, 0.055, 10, 90);
+regRing.rotateX(Math.PI / 2); regRing.translate(0, 0.90, 0);
+add("linkage", regRing, gvGrp);
+
+/* ---- runner ---------------------------------------------------------- */
+add("crown", lathe([
+  [0.22, CROWN_TOP], [0.95, CROWN_TOP], [1.09, 0.22], [1.12, 0.14], [1.10, 0.10],
+  [0.99, -0.10], [0.83, -0.34], [0.65, -0.60], [0.48, -0.83], [0.37, HUB_NOSE],
+  [0.22, HUB_NOSE - 0.05], [0.22, CROWN_TOP]
+]), runnerGrp);
+add("crown", lathe([
+  [1.12, -0.14], [1.02, -0.34], [0.95, -0.60], [0.90, BAND_Y], [1.03, BAND_Y - 0.05],
+  [1.10, -0.60], [1.20, -0.34], [1.27, -0.14], [1.12, -0.14]
+]), runnerGrp);
+const blade = bladeGeom();
+for (let i = 0; i < BLADES; i++) {
+  const m = add("runner", blade, runnerGrp);
+  m.rotation.y = i * 2 * Math.PI / BLADES;
+}
+const shaft = new THREE.CylinderGeometry(0.235, 0.235, 3.0, 40);
+shaft.translate(0, CROWN_TOP + 1.44, 0);
+add("shaft", shaft, runnerGrp);
+const coupling = new THREE.CylinderGeometry(0.42, 0.42, 0.16, 40);
+coupling.translate(0, 1.52, 0);
+add("shaft", coupling, runnerGrp);
+
+/* ---- generator hint, floor, concrete, scale figure -------------------- */
+add("gen", new THREE.CylinderGeometry(0.86, 0.86, 1.10, 40, 1, true)).position.y = 2.30;
+add("gen", ringSlab(1.02, 1.34, 1.72, 2.94, 40));
+add("concrete", ringSlab(3.98, 6.10, FLOOR_Y - 0.28, FLOOR_Y, 72));
+add("concrete", ringSlab(3.98, 4.32, -1.30, FLOOR_Y - 0.28, 72));
+add("draft", draftTubeGeom());
+
+(function scaleFigure() {
+  const g = new THREE.Group();
+  const body = new THREE.CylinderGeometry(0.115, 0.165, 0.72, 12);
+  body.translate(0, 1.16, 0);
+  const legs = new THREE.CylinderGeometry(0.10, 0.075, 0.86, 12);
+  legs.translate(0, 0.43, 0);
+  const head = new THREE.SphereGeometry(0.105, 14, 12);
+  head.translate(0, 1.63, 0);
+  [body, legs, head].forEach(x => { const m = new THREE.Mesh(x, M.person); g.add(m); parts.person.meshes.push(m); });
+  g.position.set(3.05, FLOOR_Y, 2.05);
+  g.rotation.y = -0.9;
+  machine.add(g);
+})();
+
+/* ======================================================================
+   6.  FLOW MODEL  --  analytic streamlines from the velocity triangles
+   ====================================================================== */
+const TSCALE = 0.10;                       // 1 second on screen = 0.1 s real
+const OMEGA_VIS = P.omega * TSCALE;        // 3.14 rad/s
+const WRAP_MEAN = WRAP_B + WRAP_C * 0.5;
+
+/* Meridional station on the mean streamline. */
+function meridMean(m) {
+  const c = Math.cos(m * Math.PI / 2), s = Math.sin(m * Math.PI / 2);
+  return { r: 0.67 + (R1 - 0.67) * c, y: -0.82 * s };
+}
+
+const F = { tab: { m: [], th: [] }, NT: 40 };
+function rebuildFlow(sol) {
+  F.sol = sol;
+  /* --- runner: integrate the absolute path along the mean streamline -- */
+  const N = 60, mA = [0], thA = [0], tA = [0];
+  let t = 0, th = 0, p0 = meridMean(0);
+  for (let i = 1; i <= N; i++) {
+    const m1 = i / N, p1 = meridMean(m1), mm = m1 - 0.5 / N, pm = meridMean(mm);
+    const ds = Math.hypot(p1.r - p0.r, p1.y - p0.y);
+    const Vm = sol.Q / (P.A1 + (P.A2 - P.A1) * mm);
+    const Vu = sol.Vu1 + (sol.Vu2 - sol.Vu1) * mm;
+    const dt = ds / Vm;
+    t += dt; th += Vu / pm.r * dt;
+    mA.push(m1); thA.push(th); tA.push(t); p0 = p1;
+  }
+  F.thRunner = th;
+  /* resample to a uniform-in-time table so particles keep real speed */
+  F.tab.m.length = 0; F.tab.th.length = 0;
+  for (let k = 0, j = 0; k <= F.NT; k++) {
+    const tt = t * k / F.NT;
+    while (j < N && tA[j + 1] < tt) j++;
+    const f = (tt - tA[j]) / Math.max(1e-9, tA[j + 1] - tA[j]);
+    F.tab.m.push(mA[j] + (mA[j + 1] - mA[j]) * f);
+    F.tab.th.push(thA[j] + (thA[j + 1] - thA[j]) * f);
+  }
+  /* Stage 3 duration is set so the runner turns exactly one blade wrap
+     more than the water does -- i.e. the relative path IS the blade.    */
+  F.T3 = (th + WRAP_MEAN) / OMEGA_VIS;
+  /* --- distributor: free vortex, r^2 falls linearly with time --------- */
+  F.cot = 1 / Math.tan(Math.max(0.02, sol.a1));
+  F.T2 = THREE.MathUtils.clamp(
+    Math.PI * P.b0 * (RSLOT * RSLOT - R1 * R1) / sol.Q / TSCALE, 0.8, 5.0);
+  F.dth2 = F.cot * Math.log(RSLOT / R1);
+  /* --- casing and draft tube are time-compressed for watchability ----- */
+  F.T4 = 3.0;
+  F.swirlDT = sol.Vu2 / 0.95 * F.T4 * TSCALE * 3.0;
+  /* --- colour scales -------------------------------------------------- */
+  const st = sol.st;
+  F.vCas = st[1].v; F.vSV = st[2].v; F.v1 = st[3].v; F.v2 = st[4].v;
+  F.pCas = st[1].p; F.pSV = st[2].p; F.p1 = st[3].p; F.p2 = st[4].p; F.pDT = st[5].p;
+}
+rebuildFlow(solve(1));
+
+/* ---------------------------------------------------------------- ramps */
+function ramp(stops) {
+  const cs = stops.map(s => ({ t: s[0], c: new THREE.Color(s[1]).convertSRGBToLinear() }));
+  return (x, out) => {
+    const t = THREE.MathUtils.clamp(x, 0, 1);
+    let i = 0; while (i < cs.length - 2 && t > cs[i + 1].t) i++;
+    const f = (t - cs[i].t) / Math.max(1e-6, cs[i + 1].t - cs[i].t);
+    return out.copy(cs[i].c).lerp(cs[i + 1].c, THREE.MathUtils.clamp(f, 0, 1));
+  };
+}
+const RAMP_SPEED = ramp([[0, "#16607d"], [0.34, "#2DD4BF"], [0.68, "#F5B642"], [1, "#fff1cf"]]);
+const RAMP_PRESS = ramp([[0, "#7C8CFF"], [0.10, "#2DD4BF"], [0.45, "#F5B642"], [1, "#FF6F61"]]);
+
+/* ======================================================================
+   7.  WATER PARTICLES
+   ====================================================================== */
+const NP = 5200;
+const pPos = new Float32Array(NP * 3);
+const pCol = new Float32Array(NP * 3);
+const pk = { tp: new Float32Array(NP), th: new Float32Array(NP), span: new Float32Array(NP),
+             rho: new Float32Array(NP), phi: new Float32Array(NP), jit: new Float32Array(NP),
+             T1: new Float32Array(NP), thEnter: new Float32Array(NP), thExit: new Float32Array(NP) };
+for (let i = 0; i < NP; i++) {
+  pk.th[i] = 0.12 + Math.random() * (Math.PI * 2 - 0.2);
+  pk.span[i] = Math.random();
+  pk.rho[i] = Math.sqrt(Math.random()) * 0.86;
+  pk.phi[i] = Math.random() * Math.PI * 2;
+  pk.jit[i] = Math.random() - 0.5;
+  pk.T1[i] = 2.2 + 2.4 * pk.th[i] / (Math.PI * 2);
+  pk.tp[i] = Math.random() * 9;
+  /* seed a runner-exit angle so particles that start mid draft tube are
+     spread round the cross-section instead of collapsing onto one line */
+  pk.thExit[i] = Math.random() * Math.PI * 2;
+}
+function sprite() {
+  const c = document.createElement("canvas"); c.width = c.height = 64;
+  const g = c.getContext("2d").createRadialGradient(32, 32, 0, 32, 32, 32);
+  g.addColorStop(0, "rgba(255,255,255,1)");
+  g.addColorStop(0.35, "rgba(255,255,255,.72)");
+  g.addColorStop(1, "rgba(255,255,255,0)");
+  const x = c.getContext("2d"); x.fillStyle = g; x.fillRect(0, 0, 64, 64);
+  const t = new THREE.CanvasTexture(c); t.needsUpdate = true; return t;
+}
+const pGeo = new THREE.BufferGeometry();
+pGeo.setAttribute("position", new THREE.BufferAttribute(pPos, 3));
+pGeo.setAttribute("color", new THREE.BufferAttribute(pCol, 3));
+const pMat = new THREE.PointsMaterial({
+  size: 0.105, map: sprite(), vertexColors: true, transparent: true,
+  depthWrite: false, sizeAttenuation: true, opacity: 0.95
+});
+const points = new THREE.Points(pGeo, pMat);
+points.frustumCulled = false;
+points.renderOrder = 5;          // always last, so ghosted shells never paint over the water
+machine.add(points);
+
+/* ---- one particle, one frame ---------------------------------------- */
+const _v = new THREE.Vector3(), _c = new THREE.Color();
+let colourMode = "speed", stageFocus = -1, runnerAngle = 0;
+const DIM_COL = new THREE.Color(0.012, 0.018, 0.030);
+const CH_W = Math.PI * 2 / BLADES;
+
+function stepParticles(dt) {
+  const sol = F.sol, T2 = F.T2, T3 = F.T3, T4 = F.T4;
+  const dim = DIM_COL;
+  for (let i = 0; i < NP; i++) {
+    const T1 = pk.T1[i], total = T1 + T2 + T3 + T4;
+    let tp = pk.tp[i] + dt;
+    if (tp >= total) tp -= total * Math.ceil((tp - total) / total + 1e-6);
+    if (tp < 0) tp = 0;
+    pk.tp[i] = tp;
+
+    let stage, u, v, pres;
+    if (tp < T1) {                                   /* penstock + casing */
+      stage = 0; u = tp / T1;
+      const rt0 = RT0;
+      if (u < 0.28) {
+        const z = -4.2 * (1 - u / 0.28);
+        _v.set(rc0 + pk.rho[i] * rt0 * 0.8 * Math.cos(pk.phi[i]),
+               pk.rho[i] * rt0 * 0.8 * Math.sin(pk.phi[i]), z);
+        v = F.vCas; pres = F.pCas;
+      } else {
+        const uu = (u - 0.28) / 0.72, th = pk.th[i] * uu;
+        const cs = caseRadius(th);
+        const sp = pk.phi[i] + 4.6 * uu, rr = pk.rho[i] * (1 - 0.22 * uu);
+        let R = cs.rc + cs.rt * rr * Math.cos(sp);
+        let Y = cs.rt * rr * Math.sin(sp);
+        const bl = THREE.MathUtils.smoothstep(uu, 0.70, 1.0);
+        R += (RSLOT - R) * bl; Y += ((pk.span[i] - 0.5) * 0.26 - Y) * bl;
+        _v.set(R * Math.cos(th), Y, R * Math.sin(th));
+        v = F.vCas + (F.vSV - F.vCas) * bl; pres = F.pCas + (F.pSV - F.pCas) * uu;
+      }
+    } else if (tp < T1 + T2) {                       /* distributor */
+      stage = 1; u = (tp - T1) / T2;
+      const r = Math.sqrt(RSLOT * RSLOT - u * (RSLOT * RSLOT - R1 * R1));
+      const th = pk.th[i] + F.cot * Math.log(RSLOT / r);
+      _v.set(r * Math.cos(th), (pk.span[i] - 0.5) * 0.26, r * Math.sin(th));
+      v = F.vSV + (F.v1 - F.vSV) * u; pres = F.pSV + (F.p1 - F.pSV) * u;
+    } else if (tp < T1 + T2 + T3) {                  /* runner */
+      stage = 2; u = (tp - T1 - T2) / T3;
+      const el = tp - T1 - T2;
+      if (u < 1 / (F.NT * 4)) {                      /* lock into a channel */
+        const thIn = pk.th[i] + F.dth2;
+        const ang0 = runnerAngle - OMEGA_VIS * el;
+        const k = Math.round((thIn - ang0) / CH_W - 0.5);
+        pk.thEnter[i] = ang0 + (k + 0.5) * CH_W + pk.jit[i] * CH_W * 0.62;
+      }
+      const s = pk.span[i];
+      const x = u * F.NT, k0 = Math.min(F.NT - 1, Math.floor(x)), f = x - k0;
+      const m = F.tab.m[k0] + (F.tab.m[k0 + 1] - F.tab.m[k0]) * f;
+      const th0 = F.tab.th[k0] + (F.tab.th[k0 + 1] - F.tab.th[k0]) * f;
+      const rIn = R1, yIn = -0.13 + 0.26 * s;
+      const rOut = 0.92 - 0.50 * s, yOut = -0.84 + 0.04 * s;
+      const cm = Math.cos(m * Math.PI / 2), sm = Math.sin(m * Math.PI / 2);
+      const r = rOut + (rIn - rOut) * cm, y = yIn - (yIn - yOut) * sm;
+      const th = pk.thEnter[i] + th0
+               - (WRAP_B + WRAP_C * s - WRAP_MEAN) * Math.pow(m, 1.15);
+      _v.set(r * Math.cos(th), y, r * Math.sin(th));
+      pk.thExit[i] = th;
+      v = F.v1 + (F.v2 - F.v1) * m; pres = F.p1 + (F.p2 - F.p1) * m;
+    } else {                                          /* draft tube */
+      stage = 3; u = (tp - T1 - T2 - T3) / T4;
+      const s = pk.span[i];
+      const rEx = 0.92 - 0.50 * s;
+      const frac = THREE.MathUtils.clamp(rEx / 1.02, 0.06, 0.93);
+      const fr = frac + (0.62 - frac) * (u * u) * 0.55;
+      const psi = pk.thExit[i] + F.swirlDT * (1 - (1 - u) * (1 - u));
+      dtPoint(u, psi, fr, _v);
+      dtPath(u, DT_SEC);
+      v = sol.Q / (Math.PI * DT_SEC.aw * DT_SEC.ah);
+      pres = F.p2 + (F.pDT - F.p2) * u;
+    }
+
+    const o = i * 3;
+    pPos[o] = _v.x; pPos[o + 1] = _v.y; pPos[o + 2] = _v.z;
+    if (colourMode === "speed") RAMP_SPEED(v / 38, _c);
+    else RAMP_PRESS((pres + 8) / 128, _c);
+    if (stageFocus >= 0 && stage !== stageFocus) _c.lerp(dim, 0.86);
+    pCol[o] = _c.r; pCol[o + 1] = _c.g; pCol[o + 2] = _c.b;
+  }
+  pGeo.attributes.position.needsUpdate = true;
+  pGeo.attributes.color.needsUpdate = true;
+}
+
+/* ======================================================================
+   8.  THE WALKTHROUGH
+   ====================================================================== */
+const CH = [
+  { key: "Whole machine", title: "Pressure in, nothing out",
+    cam: [5.0, 2.9, 13.2], tgt: [0.5, -1.8, 0], cut: true, stage: -1,
+    focus: ["casing", "cover", "stay", "gv", "runner", "crown", "shaft", "draft", "concrete", "linkage"],
+    body: `<p>A Francis turbine is a <span class="term">reaction</span> machine. Its passages
+      run completely full and under pressure, and it takes energy out by <strong>turning the
+      water</strong> — not by catching a jet. Water enters all the way around the rim of the
+      runner, spiralling inward; it leaves straight down the axis with almost no spin left in it.</p>
+    <p>The whole machine exists to manage that one turn. Follow the water through it: the casing
+      shares it out, the vanes aim it, the runner unwinds it, the draft tube collects what is
+      left. This unit is a <strong>21 MW</strong> set on <strong>120 m</strong> of head, turning
+      at a grid-locked <strong>300 rpm</strong>. The figure standing on the generator floor is
+      1.75 m tall.</p>
+    <p>Francis machines run roughly <strong>60% of the world's hydro capacity</strong>, from
+      40 m heads up to 600 m, in units as large as 800 MW.</p>` },
+
+  { key: "Head", title: "Head is the fuel",
+    cam: [11.8, 3.2, -2.6], tgt: [2.4, -0.1, -1.5], cut: false, stage: 0, fig: "egl",
+    focus: ["casing", "concrete"],
+    body: `<p>Everything begins with a reservoir sitting <strong>120 m</strong> above the tailrace.
+      The penstock does not speed the water up much — it delivers the energy almost entirely as
+      <span class="term">pressure</span>. At the casing inlet the water is doing about 10 m/s and
+      carrying over 110 m of pressure head.</p>
+    <p>Gross head is the surface-to-surface drop; <strong>net head</strong> is what is left after
+      penstock friction, and that is what the machine is paid for. The chart tracks the three
+      forms of energy at every station: <em>elevation</em>, <em>pressure</em>, and
+      <em>velocity</em>. Their sum is the total energy line, and it can only ever fall.</p>`,
+    eq: `P = ρ · g · Q · H · η<span class="why">1000 × 9.81 × 20 m³/s × 120 m × 0.93 ≈ 21.9 MW at
+      the shaft. Everything after this is about not losing it.</span>` },
+
+  { key: "Casing", title: "Spiral casing",
+    cam: [1.0, 14.0, 3.0], tgt: [0, 0.05, -0.4], cut: false, stage: 0,
+    focus: ["casing"], op: { casing: 0.34 },
+    body: `<p>The casing wraps a full turn around the machine and <strong>loses cross-section as
+      it goes</strong>, because it has less water left to carry. Halfway round it has already
+      handed off half the flow, so it is about half the area.</p>
+    <p>Get that taper right and two things fall out. The velocity in the casing stays roughly
+      constant instead of decaying, and — more importantly — every one of the twenty passages
+      below is fed at the <strong>same rate and the same angle</strong>. A runner blade must see
+      the same inflow at every point of every revolution; if it does not, it gets a once-per-turn
+      kick that shows up as vibration, noise and lost efficiency.</p>
+    <p>Where the spiral finally meets its own start, the casing narrows to a sharp edge — the
+      <span class="term">tongue</span>. It is the one place in the machine where the flow is
+      genuinely awkward.</p>`,
+    eq: `A(θ) ≈ Q(1 − θ/2π) / V<sub>c</sub>,   V<sub>u</sub>·r ≈ constant<span class="why">Area
+      proportional to the flow still to be delivered; free-vortex swirl outside the vanes.</span>` },
+
+  { key: "Stay ring", title: "Stay vanes hold it together",
+    cam: [3.1, 3.7, 4.7], tgt: [0.55, 0.0, 0.75], cut: true, stage: 1,
+    focus: ["stay"], op: { cover: 0.14, casing: 0.30, gv: 0.55 },
+    body: `<p>The spiral casing is a pressure vessel with a slot cut all the way along its inner
+      face. Left alone it would simply balloon open. The <span class="term">stay ring</span> —
+      ten thick vanes between two heavy rings — ties the two halves together and carries that
+      load straight across the machine.</p>
+    <p>They are structure first, but they sit in the flow, so they are shaped as aerofoils and
+      set at the angle the water already has at the design point: about <strong>16° from
+      tangential</strong>. Aligned like that they guide without turning and cost almost nothing.
+      They are welded in place and cannot move — <em>all</em> regulation happens on the next
+      ring in.</p>` },
+
+  { key: "Gates", title: "Guide vanes: throttle and rudder",
+    cam: [3.15, 2.45, 4.35], tgt: [0.80, 0.0, 0.88], cut: true, stage: 1, fig: "gate",
+    focus: ["gv", "linkage"], op: { cover: 0.12, casing: 0.22 },
+    body: `<p>Twenty pivoting vanes, all driven in unison from one <span class="term">regulating
+      ring</span>. They are the only moving control in the whole waterway, and they do two jobs
+      at once.</p>
+    <ul>
+      <li><strong>They meter.</strong> The throat between neighbouring vanes sets the discharge —
+        close them and Q falls with the opening.</li>
+      <li><strong>They aim.</strong> Their angle sets α₁, the direction the water attacks the
+        runner with, and therefore how much <span class="term">swirl</span> it delivers.</li>
+    </ul>
+    <p>Drag the slider and watch both happen. At full gate the flow comes in at about 20° from
+      tangential; near closure the vanes lie almost tangent to the circle and the water spirals
+      round several times before it can work its way in. Some of the pressure head is turned into
+      speed here — but only some. In a reaction turbine the rest is still waiting.</p>`,
+    eq: `tan α₁ = V<sub>m1</sub> / V<sub>u1</sub><span class="why">Meridional (inward) component
+      over tangential (swirl) component. Meridional velocity follows the discharge; the vane
+      angle decides how much swirl comes with it.</span>` },
+
+  { key: "Runner", title: "The runner does the work",
+    cam: [2.1, 0.9, 5.4], tgt: [0, -0.4, 0], cut: true, stage: 2,
+    focus: ["runner", "shaft"],
+    body: `<p>Fifteen blades, each wrapped <strong>90° to 140°</strong> around the axis and twisted
+      from a nearly radial leading edge to an almost axial trailing edge. Water arrives spinning
+      at <strong>29 m/s</strong> around the axis and leaves with essentially none. The angular
+      momentum it loses is torque on the shaft — that is the entire mechanism.</p>
+    <p>Because it is a reaction machine, <strong>pressure falls inside the runner too</strong>,
+      not just velocity. Roughly half of the remaining head is converted in these passages: the
+      channel between two blades acts as its own rotating nozzle. That is the difference from an
+      impulse wheel, and it is why the runner must be kept full and sealed.</p>
+    <p>Switch on <em>Ride the runner</em> to sit in the rotating frame. The swirl you see from
+      outside disappears, and what is left is water sliding neatly along the blade — which is what
+      the blade shape was designed from.</p>`,
+    eq: `T = ρQ(V<sub>u1</sub>r₁ − V<sub>u2</sub>r₂)<br>E = u₁V<sub>u1</sub> − u₂V<sub>u2</sub>
+      <span class="why">Euler's turbomachinery equation. Work per kilogram is set purely by what
+      the swirl does between inlet and outlet — the blade shape only matters because it is what
+      changes the swirl.</span>` },
+
+  { key: "Triangles", title: "Velocity triangles",
+    cam: [1.5, 1.3, 4.3], tgt: [0.1, -0.2, 0.1], cut: true, stage: 2, fig: "tri",
+    focus: ["runner", "gv"],
+    body: `<p>Three vectors at each edge of the blade: <strong>u</strong>, the blade's own speed;
+      <strong>V</strong>, the water's velocity as you see it from the floor; and
+      <strong>W</strong>, what the water does relative to the blade. W = V − u, always.</p>
+    <p>The blade can only ever be shaped for <em>one</em> W. At the design gate the relative flow
+      arrives exactly along the blade's leading edge — <span class="term">shockless entry</span>.
+      Move the gate and V₁ changes but u₁ cannot, so W₁ swings away from the blade angle. That
+      mismatch is the <span class="term">incidence</span>, and it is the main reason a Francis
+      turbine loses efficiency off its design point.</p>
+    <p>At the outlet, the runner is doing its job when V₂ points straight down the axis: no swirl
+      left, nothing wasted. Close the gates and V<sub>u2</sub> grows into a stubborn corkscrew
+      that the draft tube then has to live with.</p>`,
+    eq: `W = V − u,   V<sub>u2</sub> = u₂ − V<sub>m2</sub>/tan β₂<span class="why">β₂ = 15.8° is
+      cast into the blade and never changes. So the exit swirl is decided by discharge
+      alone.</span>` },
+
+  { key: "Draft tube", title: "Draft tube: the part people forget",
+    cam: [7.0, -0.4, 12.6], tgt: [2.6, -3.5, 0], cut: true, stage: 3, fig: "egl",
+    focus: ["draft", "concrete", "runner", "crown"],
+    body: `<p>The water leaving the runner is still doing about 9 m/s. Dump that into the tailrace
+      and you have thrown away several percent of the head. The draft tube is a slow, carefully
+      diverging duct that turns that speed back into pressure before letting go.</p>
+    <p>The consequence is the interesting part. By recovering velocity head <em>downstream</em>
+      of the runner, the tube pulls the pressure at the runner outlet <strong>below
+      atmospheric</strong> — look at the pressure bar going negative on the chart. That suction is
+      what lets the machine sit above the tailwater and still use every metre of head down to it.</p>
+    <p>The limit is <span class="term">cavitation</span>. Push the runner too high and the outlet
+      pressure reaches vapour pressure, bubbles form and collapse on the blades, and the bronze
+      gets eaten. Below about half gate the leftover swirl also rolls up into a
+      <span class="term">vortex rope</span> — visible on the slider — which thumps the concrete at
+      a fraction of running speed.</p>`,
+    eq: `σ = (H<sub>atm</sub> − H<sub>vap</sub> − H<sub>s</sub>) / H<span class="why">Thoma's
+      cavitation number. H<sub>s</sub> is the runner's height above tailwater — the one term the
+      civil design gets to choose.</span>` },
+
+  { key: "Control", title: "Following the grid",
+    cam: [4.6, 4.2, 13.0], tgt: [0, -0.5, 0], cut: false, stage: -1, fig: "hill",
+    focus: ["gen", "shaft", "casing", "cover", "concrete", "runner", "crown"],
+    body: `<p>The generator is synchronous, so the runner speed is not a free variable: 20 poles on
+      a 50 Hz grid means <strong>300 rpm, always</strong>. Demand changes, the head barely moves,
+      and the speed cannot move — so the governor has exactly one lever, and it is the guide vanes.</p>
+    <p>That is why the efficiency curve matters so much. The blade angles are frozen at one
+      operating point, so power is bought at the cost of incidence loss and exit swirl either side
+      of it. Peak here is near <strong>88% gate</strong>; below roughly 40% the machine is in its
+      rough zone and operators avoid parking there.</p>
+    <p>Where Francis fits is set by <span class="term">specific speed</span> — high head and modest
+      flow pushes you toward a Pelton wheel, low head and huge flow toward a Kaplan propeller.
+      This unit sits at N<sub>s</sub> ≈ 112, comfortably in Francis territory.</p>`,
+    eq: `N = 120f/p = 300 rpm,   N<sub>s</sub> = N√P / H<sup>1.25</sup><span class="why">Pelton
+      below ~60, Francis 60–300, Kaplan above ~300 (metric, kW and m).</span>` }
+];
+
+/* ======================================================================
+   9.  DIAGRAMS  --  redrawn from the model on every gate change
+   ====================================================================== */
+const DEG = 180 / Math.PI;
+const f1 = x => (Math.round(x * 10) / 10).toFixed(1);
+const f0 = x => Math.round(x).toString();
+
+function svgArrow(x1, y1, x2, y2, cls, w) {
+  const a = Math.atan2(y2 - y1, x2 - x1), L = Math.hypot(x2 - x1, y2 - y1);
+  if (L < 4) return "";
+  const hx = x2 - Math.cos(a) * 8, hy = y2 - Math.sin(a) * 8, s = 3.6;
+  return `<line x1="${f1(x1)}" y1="${f1(y1)}" x2="${f1(hx)}" y2="${f1(hy)}" class="${cls}"
+    stroke-width="${w || 1.8}"/><path class="${cls}f" d="M${f1(x2)} ${f1(y2)}
+    L${f1(hx - Math.sin(a) * s)} ${f1(hy + Math.cos(a) * s)}
+    L${f1(hx + Math.sin(a) * s)} ${f1(hy - Math.cos(a) * s)}Z"/>`;
+}
+const FIGCSS = `<style>
+  .ax{stroke:var(--line);stroke-width:1}
+  .gu{stroke:var(--line);stroke-width:1;stroke-dasharray:2 3}
+  .u{stroke:var(--ink-2)} .uf{fill:var(--ink-2)}
+  .V{stroke:var(--teal)} .Vf{fill:var(--teal)}
+  .W{stroke:var(--gold-bright)} .Wf{fill:var(--gold-bright)}
+  .bl{stroke:var(--coral);stroke-dasharray:4 3;stroke-width:1.6}
+  .t{font:500 10px "IBM Plex Mono",monospace;fill:var(--ink-2)}
+  .tk{font:400 8.5px "IBM Plex Mono",monospace;fill:var(--ink-3)}
+  .tv{font:600 10px "IBM Plex Mono",monospace;fill:var(--ink)}
+  .lb{font:500 9px Oswald,sans-serif;letter-spacing:.09em;fill:var(--ink-3)}
+</style>`;
+
+/* ---- velocity triangles --------------------------------------------- */
+function figTri(S) {
+  const k = 4.3, X = 40, SUB = ["\u2081", "\u2082"];
+  const rows = [
+    { y: 68, u: P.u1, Vu: S.Vu1, Vm: S.Vm1, tag: "INLET \u00b7 LEADING EDGE", bl: BETA1_BLADE },
+    { y: 198, u: P.u2, Vu: S.Vu2, Vm: S.Vm2, tag: "OUTLET \u00b7 TRAILING EDGE", bl: Math.atan(P.tanB2) }
+  ];
+  let g = "";
+  rows.forEach((r, i) => {
+    const n = SUB[i], ux = X + r.u * k, vx = X + r.Vu * k, vy = r.y + r.Vm * k;
+    const ba = i ? Math.PI - r.bl : r.bl;
+    g += `<text class="lb" x="${X - 8}" y="${r.y - 30}">${r.tag}</text>`;
+    g += `<line class="gu" x1="${X - 8}" y1="${r.y}" x2="${f1(Math.max(ux, vx) + 22)}" y2="${r.y}"/>`;
+    g += `<line class="bl" x1="${f1(ux)}" y1="${r.y}" x2="${f1(ux + Math.cos(ba) * 60)}"
+           y2="${f1(r.y + Math.sin(ba) * 60)}"/>`;
+    g += svgArrow(X, r.y, ux, r.y, "u", 1.6);
+    g += svgArrow(X, r.y, vx, vy, "V", 2.2);
+    g += svgArrow(ux, r.y, vx, vy, "W", 2.2);
+    g += `<text class="t" x="${f1((X + ux) / 2)}" y="${r.y - 9}" text-anchor="middle">u${n}</text>`;
+    g += `<text class="t" x="${f1(vx - 8)}" y="${f1(vy + 16)}" text-anchor="middle">V${n}</text>`;
+    g += `<text class="t" x="${f1((ux + vx) / 2 + 10)}" y="${f1((r.y + vy) / 2 + 3)}">W${n}</text>`;
+    g += `<text class="tk" x="${X - 8}" y="${f1(r.y + Math.abs(r.Vm) * k + 26)}">blade u ${f1(r.u)}
+           \u00b7 swirl ${f1(r.Vu)} \u00b7 through-flow ${f1(r.Vm)} m/s</text>`;
+  });
+  const inc = (S.b1 - BETA1_BLADE) * DEG;
+  return `<svg viewBox="0 0 336 300" role="img" aria-label="Inlet and outlet velocity triangles">
+    ${FIGCSS}${g}
+    <text class="tk" x="32" y="286">\u03b1\u2081 ${f1(S.a1 * DEG)}\u00b0 \u00b7 \u03b2\u2081 ${f0(S.b1 * DEG)}\u00b0 \u00b7 blade ${f0(BETA1_BLADE * DEG)}\u00b0</text>
+    <text class="tv" x="240" y="286" fill="${Math.abs(inc) > 8 ? "var(--coral)" : "var(--teal)"}">incidence ${inc >= 0 ? "+" : "\u2212"}${f0(Math.abs(inc))}\u00b0</text>
+  </svg>`;
+}
+
+/* ---- energy grade line ------------------------------------------------ */
+function figEGL(S) {
+  const xs = i => 62 + i * 43, yb = 170, sc = 1.10, w = 19;
+  let g = `<line class="gu" x1="48" y1="${f1(yb - 120 * sc)}" x2="332" y2="${f1(yb - 120 * sc)}"/>
+           <line class="ax" x1="48" y1="${yb}" x2="332" y2="${yb}"/>`;
+  let line = "";
+  S.st.forEach((st, i) => {
+    const x = xs(i), zTop = yb - st.z * sc, vh = st.total - st.z - st.p;
+    g += `<rect x="${f1(x - w / 2)}" y="${f1(zTop)}" width="${w}" height="${f1(st.z * sc)}"
+           fill="var(--ink-3)" opacity=".38"/>`;
+    g += st.p >= 0
+      ? `<rect x="${f1(x - w / 2)}" y="${f1(zTop - st.p * sc)}" width="${w}"
+          height="${f1(st.p * sc)}" fill="var(--teal)" opacity=".82"/>`
+      : `<rect x="${f1(x - w / 2)}" y="${f1(zTop)}" width="${w}" height="${f1(-st.p * sc)}"
+          fill="#7C8CFF" opacity=".92"/>`;
+    const vTop = yb - st.total * sc;
+    g += `<rect x="${f1(x - w / 2)}" y="${f1(vTop)}" width="${w}"
+           height="${f1(Math.max(0, vh * sc))}" fill="var(--gold)" opacity=".88"/>`;
+    line += `${i ? "L" : "M"}${f1(x)} ${f1(vTop)}`;
+    g += `<circle cx="${f1(x)}" cy="${f1(vTop)}" r="2.3" fill="var(--coral)"/>`;
+    g += `<text class="tk" x="${f1(x + 3)}" y="184" text-anchor="end"
+           transform="rotate(-90 ${f1(x + 3)} 184)">${st.name}</text>`;
+  });
+  g += `<path d="${line}" fill="none" stroke="var(--coral)" stroke-width="1.6" opacity=".9"/>`;
+  const suck = S.st[4].p;
+  return `<svg viewBox="0 0 336 262" role="img" aria-label="Energy grade line through the machine">
+    ${FIGCSS}${g}
+    <text class="tk" x="6" y="${f1(yb - 120 * sc + 4)}">120 m</text>
+    <text class="tk" x="6" y="${yb + 4}">0 m</text>
+    <text class="tk" x="6" y="${yb + 15}">tail-</text><text class="tk" x="6" y="${yb + 25}">water</text>
+    ${suck < 0 ? `<text class="tv" x="332" y="18" text-anchor="end" fill="#7C8CFF">runner outlet ${f1(suck)} m \u2014 below atmosphere</text>` : ""}
+    <g transform="translate(24,250)">
+      <rect width="9" height="9" y="-8" fill="var(--ink-3)" opacity=".38"/><text class="tk" x="13">elevation</text>
+      <rect width="9" height="9" y="-8" x="74" fill="var(--teal)" opacity=".82"/><text class="tk" x="87">pressure</text>
+      <rect width="9" height="9" y="-8" x="150" fill="var(--gold)" opacity=".88"/><text class="tk" x="163">velocity</text>
+      <circle cx="230" cy="-3.5" r="2.5" fill="var(--coral)"/><text class="tk" x="237">total</text>
+    </g>
+  </svg>`;
+}
+
+/* ---- guide vane plan view --------------------------------------------- */
+function vanePath2D(cx, cy, rad, phi, a, chord, sc) {
+  const N = 16, up = [], lo = [], th = 0.19, cam = 0.05, yaw = phi + a;
+  for (let i = 0; i <= N; i++) {
+    const x = i / N;
+    const yt = 5 * th * chord * (0.2969 * Math.sqrt(x) - 0.126 * x - 0.3516 * x * x
+             + 0.2843 * x ** 3 - 0.1036 * x ** 4);
+    const yc = cam * chord * 4 * x * (1 - x);
+    up.push([x * chord - 0.42 * chord, yc + yt]);
+    lo.push([x * chord - 0.42 * chord, yc - yt]);
+  }
+  const px = cx + rad * Math.cos(phi) * sc, py = cy - rad * Math.sin(phi) * sc;
+  const cw = -Math.sin(yaw), sw = -Math.cos(yaw), nx = -sw, ny = cw;
+  const pts = up.concat(lo.reverse())
+    .map(([X, Y]) => [px + (X * cw + Y * nx) * sc, py + (X * sw + Y * ny) * sc]);
+  return "M" + pts.map(q => `${f1(q[0])} ${f1(q[1])}`).join("L") + "Z";
+}
+function figGate(S) {
+  const cx = 168, cy = 118, sc = 46;
+  let g = "";
+  [[RSLOT, "var(--line)", "3 4"], [R1, "var(--gold)", ""]].forEach(([r, c, d]) => {
+    g += `<circle cx="${cx}" cy="${cy}" r="${f1(r * sc)}" fill="none" stroke="${c}"
+           stroke-width="1" stroke-dasharray="${d}" opacity=".85"/>`;
+  });
+  for (let i = 0; i < SV_N; i++) {
+    g += `<path d="${vanePath2D(cx, cy, RSV, i * 2 * Math.PI / SV_N + 0.15, BEP.a1, SV_C, sc)}"
+           fill="var(--ink-3)" opacity=".55"/>`;
+  }
+  for (let i = 0; i < GV_N; i++) {
+    g += `<path d="${vanePath2D(cx, cy, RGV, i * 2 * Math.PI / GV_N, S.a1, GV_C, sc)}"
+           fill="var(--ink-2)" stroke="var(--ink)" stroke-width=".5"/>`;
+  }
+  [0.6, 3.0].forEach(th0 => {
+    let d = "";
+    for (let t = 0; t <= 1.0001; t += 0.02) {
+      const r = RSLOT - t * (RSLOT - R1 * 0.94);
+      const th = th0 + F.cot * Math.log(RSLOT / r);
+      d += `${t ? "L" : "M"}${f1(cx + r * Math.cos(th) * sc)} ${f1(cy - r * Math.sin(th) * sc)}`;
+    }
+    g += `<path d="${d}" fill="none" stroke="var(--teal)" stroke-width="1.7" opacity=".95"/>`;
+  });
+  return `<svg viewBox="0 0 336 258" role="img" aria-label="Guide vanes seen from above">
+    ${FIGCSS}${g}
+    <text class="lb" x="6" y="242">LOOKING DOWN \u00b7 GATE ${f0(S.g * 100)}%</text>
+    <text class="tk" x="6" y="256">water reaches the runner at \u03b1\u2081 = ${f1(S.a1 * DEG)}\u00b0 from tangential</text>
+  </svg>`;
+}
+
+/* ---- efficiency hill ------------------------------------------------- */
+function figHill(S) {
+  const x0 = 34, x1 = 322, y0 = 22, y1 = 104;
+  const X = g => x0 + (g - 0.10) / 0.90 * (x1 - x0);
+  const Y = e => y1 - e * (y1 - y0);
+  let de = "", dp = "";
+  for (let g = 0.12; g <= 1.001; g += 0.02) {
+    const e = hydraulicEff(g), pw = g * e / 0.934;
+    de += `${de ? "L" : "M"}${f1(X(g))} ${f1(Y(e))}`;
+    dp += `${dp ? "L" : "M"}${f1(X(g))} ${f1(Y(pw))}`;
+  }
+  return `<svg viewBox="0 0 336 138" role="img" aria-label="Efficiency and power against gate opening">
+    ${FIGCSS}
+    <line class="ax" x1="${x0}" y1="${y1}" x2="${x1}" y2="${y1}"/>
+    <line class="ax" x1="${x0}" y1="${y0}" x2="${x0}" y2="${y1}"/>
+    <line class="gu" x1="${f1(X(0.45))}" y1="${y0}" x2="${f1(X(0.45))}" y2="${y1}"/>
+    <text class="tk" x="${f1(X(0.45) - 5)}" y="${y0 + 9}" text-anchor="end">← rough zone</text>
+    <path d="${dp}" fill="none" stroke="var(--gold)" stroke-width="1.5" opacity=".55"/>
+    <path d="${de}" fill="none" stroke="var(--teal)" stroke-width="2.2"/>
+    <circle cx="${f1(X(S.g))}" cy="${f1(Y(S.eta))}" r="4" fill="var(--coral)"/>
+    <text class="tk" x="4" y="${y0 + 4}">100%</text><text class="tk" x="14" y="${y1}">0</text>
+    <text class="tk" x="${x0}" y="${y1 + 13}">10% gate</text>
+    <text class="tk" x="${x1}" y="${y1 + 13}" text-anchor="end">100%</text>
+    <text class="tk" x="${x0}" y="${y1 + 28}"><tspan fill="var(--teal)">━</tspan> hydraulic efficiency
+      <tspan fill="var(--gold)">━</tspan> power (fraction of rated)</text>
+  </svg>`;
+}
+
+/* ======================================================================
+   10.  UI
+   ====================================================================== */
+const REDUCED = matchMedia("(prefers-reduced-motion: reduce)").matches;
+const $ = id => document.getElementById(id);
+const gateEl = $("gate"), gateVal = $("gateval");
+const stepEl = $("stepper"), chapEl = $("chapter");
+const cutBox = $("t-cut"), ghostBox = $("t-ghost"), flowBox = $("t-flow"),
+      rideBox = $("t-ride"), spinBox = $("t-spin");
+const tourBtn = $("tour"), tourBar = $("tourbar");
+
+let S = solve(1), ci = 0, ghostOn = true, cutOn = true, flowOn = true,
+    rideOn = false, rideBlend = 0, tourOn = false, tourT = 0;
+const TOUR_S = 17;
+
+/* ---- part visibility ------------------------------------------------- */
+for (const k in parts) { parts[k].tOp = 1; parts[k].tDim = 1; parts[k].op = 1; parts[k].dim = 1; parts[k].ghostOp = 0.14; }
+parts.crown.ghostOp = 0.26;      // shroud stays readable so the blades show through
+parts.runner.ghostOp = 0.20;
+function setFocus(list, ov) {
+  for (const k in parts) {
+    const q = parts[k], on = list.indexOf(k) >= 0;
+    q.tOp = (on || !q.ghostable) ? 1 : (ghostOn ? q.ghostOp : 1);
+    q.tDim = (on || k === "person") ? 1 : 0.58;
+    /* a chapter can ask for a specific part to be see-through instead */
+    if (ov && ov[k] !== undefined && ghostOn) q.tOp = ov[k];
+  }
+}
+function updateMaterials(dt) {
+  const k = 1 - Math.pow(0.0001, dt);
+  for (const n in parts) {
+    const q = parts[n];
+    q.op += (q.tOp - q.op) * k; q.dim += (q.tDim - q.dim) * k;
+    q.mat.opacity = q.op;
+    q.mat.depthWrite = q.op > 0.62;
+    /* solid parts stay in the opaque pass -- only ghosts go transparent */
+    const tr = q.op < 0.995;
+    if (q.mat.transparent !== tr) { q.mat.transparent = tr; q.mat.needsUpdate = true; }
+    q.mat.color.copy(q.base).multiplyScalar(q.dim);
+    q.mat.envMapIntensity = 0.35 + 0.65 * q.dim;
+  }
+  const tc = cutOn ? 0.02 : 40;
+  clip.constant += (tc - clip.constant) * (1 - Math.pow(0.02, dt));
+}
+
+/* ---- readouts -------------------------------------------------------- */
+function updateGauges() {
+  gateVal.textContent = Math.round(S.g * 100) + "%";
+  $("g-q").innerHTML = f1(S.Q) + "<small>m³/s</small>";
+  $("g-t").innerHTML = f0(S.torque / 1000) + "<small>kN·m</small>";
+  $("g-p").innerHTML = (S.Pel / 1e6).toFixed(1) + "<small>MW</small>";
+  $("g-e").innerHTML = f1(S.eta * 100) + "<small>%</small>";
+  $("g-s").innerHTML = (S.Vu2 < 0 ? "\u2212" : "+") + f1(Math.abs(S.Vu2)) + "<small>m/s</small>";
+  /* metric specific speed, N sqrt(kW) / H^1.25 -- Francis territory is 60-300 */
+  const ns = P.N * Math.sqrt(Math.max(1, S.Psh / 1000)) / Math.pow(P.H, 1.25);
+  $("g-ns").textContent = f0(ns);
+}
+
+/* ---- chapter --------------------------------------------------------- */
+const CAPTION = {
+  tri: "Drawn to scale from the live operating point. The dashed coral line is the angle actually cast into the blade — the gap between it and W is the incidence.",
+  egl: "Every station in metres of water. Elevation, then pressure, then velocity head; the coral line is their sum and only ever falls. Blue means the pressure has gone below atmospheric.",
+  gate: "All twenty gates at the current opening, with two streamlines coming in. Close them and the spiral tightens: the water circles the machine several times before it can work its way to the runner.",
+  hill: "Blade angles are fixed, so efficiency peaks at one gate opening and falls away either side of it."
+};
+function figureHTML(ch) {
+  if (!ch.fig) return "";
+  const svg = ch.fig === "tri" ? figTri(S) : ch.fig === "egl" ? figEGL(S)
+            : ch.fig === "gate" ? figGate(S) : figHill(S);
+  return `<figure class="figure" id="fig"><div id="figsvg">${svg}</div>
+          <figcaption>${CAPTION[ch.fig]}</figcaption></figure>`;
+}
+function refreshFigure() {
+  const ch = CH[ci], host = $("figsvg");
+  if (!ch.fig || !host) return;
+  host.innerHTML = ch.fig === "tri" ? figTri(S) : ch.fig === "egl" ? figEGL(S)
+                 : ch.fig === "gate" ? figGate(S) : figHill(S);
+}
+function setChapter(i, instant) {
+  ci = (i + CH.length) % CH.length;
+  const ch = CH[ci];
+  chapEl.innerHTML =
+    `<div class="num">STAGE ${String(ci + 1).padStart(2, "0")} / ${CH.length}</div>
+     <h2>${ch.title}</h2>${figureHTML(ch)}${ch.body}
+     ${ch.eq ? `<p class="eq">${ch.eq}</p>` : ""}`;
+  chapEl.scrollTop = 0;
+  goTo(new THREE.Vector3(...ch.cam), new THREE.Vector3(...ch.tgt), instant);
+  /* the rotating frame only works about the machine axis */
+  if (rideOn) { orbit.gTarget.x = 0; orbit.gTarget.z = 0; }
+  setFocus(ch.focus, ch.op);
+  stageFocus = ch.stage;
+  cutOn = ch.cut; cutBox.checked = ch.cut;
+  [...stepEl.children].forEach((b, k) => {
+    b.setAttribute("aria-current", k === ci ? "true" : "false");
+    b.classList.toggle("seen", k < ci);
+  });
+  $("prev").disabled = ci === 0;
+  tourT = 0;
+}
+CH.forEach((c, i) => {
+  const b = document.createElement("button");
+  b.textContent = String(i + 1).padStart(2, "0");
+  b.title = c.key;
+  b.setAttribute("aria-label", "Stage " + (i + 1) + ": " + c.key);
+  b.onclick = () => { stopTour(); setChapter(i); };
+  stepEl.appendChild(b);
+});
+
+/* ---- controls -------------------------------------------------------- */
+function setGate(v) {
+  S = solve(v);
+  rebuildFlow(S);
+  const yaw = S.a1;
+  guideVanes.forEach(g => { g.pivot.rotation.y = vaneYaw(g.phi, yaw); });
+  updateGauges();
+  refreshFigure();
+}
+gateEl.addEventListener("input", () => setGate(+gateEl.value / 100));
+
+cutBox.onchange = () => { cutOn = cutBox.checked; };
+ghostBox.onchange = () => { ghostOn = ghostBox.checked; setFocus(CH[ci].focus, CH[ci].op); };
+flowBox.onchange = () => { flowOn = flowBox.checked; points.visible = flowOn; };
+rideBox.onchange = () => {
+  rideOn = rideBox.checked;
+  if (rideOn) { orbit.gTarget.x = 0; orbit.gTarget.z = 0; }
+};
+spinBox.onchange = () => { orbit.spin = spinBox.checked; };
+$("reset").onclick = () => { const c = CH[ci]; goTo(new THREE.Vector3(...c.cam), new THREE.Vector3(...c.tgt)); };
+$("next").onclick = () => { stopTour(); setChapter(ci + 1); };
+$("prev").onclick = () => { stopTour(); setChapter(ci - 1); };
+
+function setMode(m) {
+  colourMode = m;
+  $("m-speed").setAttribute("aria-pressed", m === "speed");
+  $("m-press").setAttribute("aria-pressed", m === "pressure");
+  const stops = m === "speed"
+    ? ["#16607d", "#2DD4BF", "#F5B642", "#fff1cf"]
+    : ["#7C8CFF", "#2DD4BF", "#F5B642", "#FF6F61"];
+  $("leg-ramp").style.background = `linear-gradient(90deg,${stops.join(",")})`;
+  $("leg-lo").textContent = m === "speed" ? "slow" : "suction";
+  $("leg-hi").textContent = m === "speed" ? "38 m/s" : "120 m";
+}
+(function railCollapse() {
+  const rt = $("railtoggle"), rail = $("rail");
+  rt.onclick = () => {
+    const open = !rail.classList.toggle("collapsed");
+    rt.setAttribute("aria-expanded", open ? "true" : "false");
+    rt.setAttribute("aria-label", open ? "Collapse the panel" : "Open the panel");
+    setTimeout(() => { resize(); refitCamera(); }, 240);   // after the width transition
+  };
+})();
+$("m-speed").onclick = () => setMode("speed");
+$("m-press").onclick = () => setMode("pressure");
+
+function stopTour() { tourOn = false; tourBtn.setAttribute("aria-pressed", "false"); tourBar.style.transform = "scaleX(0)"; }
+tourBtn.onclick = () => {
+  tourOn = !tourOn;
+  tourBtn.setAttribute("aria-pressed", tourOn ? "true" : "false");
+  tourT = 0; if (!tourOn) tourBar.style.transform = "scaleX(0)";
+};
+addEventListener("keydown", e => {
+  if (e.target.tagName === "INPUT") return;
+  if (e.key === "ArrowRight") { stopTour(); setChapter(ci + 1); }
+  else if (e.key === "ArrowLeft") { stopTour(); setChapter(ci - 1); }
+  else return;
+  e.preventDefault();
+});
+
+/* ---- theme ----------------------------------------------------------- */
+function isDark() {
+  const t = document.documentElement.getAttribute("data-theme");
+  if (t === "dark") return true;
+  if (t === "light") return false;
+  return matchMedia("(prefers-color-scheme: dark)").matches;
+}
+function applyTheme() {
+  const d = isDark();
+  parts.concrete.base.set(d ? 0x2C3037 : 0x848C94).convertSRGBToLinear();
+  parts.person.base.set(d ? 0x222A33 : 0x39424C).convertSRGBToLinear();
+  renderer.toneMappingExposure = d ? 0.95 : 1.12;
+  pMat.opacity = d ? 0.95 : 0.99;
+  pMat.size = d ? 0.105 : 0.098;
+}
+matchMedia("(prefers-color-scheme: dark)").addEventListener("change", applyTheme);
+new MutationObserver(applyTheme).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+
+/* ---- resize ---------------------------------------------------------- */
+function resize() {
+  const w = innerWidth, h = innerHeight;
+  camera.aspect = w / h;
+  /* the rail covers the left (or the bottom on narrow screens), so shift the
+     frustum to keep the machine centred in the space that is actually free  */
+  if (w > 860) {
+    const rail = document.getElementById("rail");
+    camera.setViewOffset(w, h, -((rail ? rail.offsetWidth : 328) + 28) / 2, 0, w, h);
+  } else {
+    const mid = (64 + h - (h - 64 - freeBand())) / 2;   // centre of the free band
+    camera.setViewOffset(w, h, 0, h / 2 - mid, w, h);
+  }
+  camera.updateProjectionMatrix();
+  renderer.setSize(w, h, false);
+  const narrow = w <= 860;
+  if (narrow !== wasNarrow) { wasNarrow = narrow; refitCamera(); }
+}
+function refitCamera() {
+  const c = CH[ci];
+  goTo(new THREE.Vector3(...c.cam), new THREE.Vector3(...c.tgt), true);
+}
+addEventListener("resize", resize);
+
+/* ======================================================================
+   11.  LOOP
+   ====================================================================== */
+let last = performance.now(), started = false;
+function frame(now) {
+  const dt = Math.min(0.05, (now - last) / 1000); last = now;
+  runnerAngle += OMEGA_VIS * dt;
+  runnerGrp.rotation.y = runnerAngle;
+  rideBlend += ((rideOn ? 1 : 0) - rideBlend) * (1 - Math.pow(0.02, dt));
+  rideAngle += OMEGA_VIS * dt * rideBlend;
+  if (flowOn) stepParticles(dt);
+  updateMaterials(dt);
+  updateCamera(dt);
+  if (tourOn) {
+    tourT += dt;
+    tourBar.style.transform = `scaleX(${Math.min(1, tourT / TOUR_S)})`;
+    if (tourT >= TOUR_S) { setChapter(ci + 1); tourOn = true; tourBtn.setAttribute("aria-pressed", "true"); }
+  }
+  renderer.render(scene, camera);
+  if (!started) {
+    started = true;
+    const l = $("loading"); l.style.opacity = "0";
+    setTimeout(() => l.remove(), 520);
+  }
+  requestAnimationFrame(frame);
+}
+
+resize();
+applyTheme();
+setMode("speed");
+setGate(1);
+setChapter(0, true);
+requestAnimationFrame(frame);
+</script>
