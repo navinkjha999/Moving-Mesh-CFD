@@ -1,17 +1,21 @@
-# Engineering Drawing I — Episode 06
-## Edge View, True Shape and True Size of an Oblique Plane
+# Engineering Drawing I — Sheet 4, *Basic Descriptive Geometry II*
 
-Manim CE 0.20.1 source for a ten-minute YouTube lesson on finding the true
-shape of a plane that is inclined to **both** the horizontal and the vertical
-plane, worked through Exercise 4 (Set A), Q.6 of Sheet 4 — *Basic Descriptive
-Geometry II*.
+Manim CE 0.20.1 source for two YouTube lessons:
+
+* **Episode 06 — Edge View, True Shape and True Size of an Oblique Plane**
+  (Exercise 4, Set A, Q.6), about eleven minutes.
+* **Episode 07 — Where a Line Pierces a Plane**: the piercing point, the
+  hidden stretch, and the true angle (Exercise 4, Set A, Q.11), about
+  thirteen minutes.
 
 ```
-ed06_true_shape.py    the episode: five scenes, all the narration, all the geometry
-ed_stage.py           the shared 3-D stage (HP, VP, XY, the four quadrants)
-ed_common.py          thin shim over cfd_common: narration, HUD and camera helpers
-cfd_common.py         the series infrastructure (voice, cache, loudnorm, fonts)
-render_ed06.bat       renders the five scenes in running order at 1080p60
+ed06_true_shape.py      episode 06: five scenes, all the narration, all the geometry
+ed07_piercing_point.py  episode 07: six scenes
+ed_stage.py             the shared 3-D stage (HP, VP, XY, the four quadrants)
+ed_common.py            thin shim over cfd_common: narration, HUD and camera helpers
+cfd_common.py           the series infrastructure (voice, cache, loudnorm, fonts)
+render_ed06.bat         renders episode 06 in running order at 1080p60
+render_ed07.bat         renders episode 07 in running order at 1080p60
 ```
 
 ---
@@ -20,9 +24,16 @@ render_ed06.bat       renders the five scenes in running order at 1080p60
 
 ```bat
 render_ed06.bat                              REM all five scenes, 1080p60
+render_ed07.bat                              REM all six scenes
+render_ed07.bat S03                          REM just that one scene
 py -3.11 -m manim -qh ed06_true_shape.py S04_Construction
-py -3.11 -m manim -ql ed06_true_shape.py S02_EdgeViewIdea      REM quick look
+py -3.11 -m manim -ql ed07_piercing_point.py S02_CuttingPlane   REM quick look
 ```
+
+Render **one scene at a time**. Manim writes its rendered glyphs into a shared
+`media/texts/` cache, and two renders of the same file at once will now and
+then delete each other's temporary SVG mid-read; the batch files are
+sequential for that reason.
 
 Needs `manim==0.20.1`, `edge-tts`, and `ffmpeg` on the PATH. The fonts are
 Bahnschrift and Cascadia Mono, both shipped with Windows; on another machine
@@ -38,9 +49,10 @@ so a re-render never re-synthesises a line you have not edited.
 
 ```bat
 py -3.11 ed06_true_shape.py
+py -3.11 ed07_piercing_point.py
 ```
 
-prints the worked solution the animation is about to draw:
+Each prints the worked solution its animation is about to draw. Episode 06:
 
 ```
   θ with the HP            52.55°
@@ -62,6 +74,21 @@ from the five given dimensions and asserts, before a frame is rendered, that
 `S02_EdgeViewIdea` makes the same check in three dimensions: the angle it draws
 on screen is asserted equal to θH before the arc is built.
 
+Episode 07 prints, and asserts, the same way:
+
+```
+  piercing point P   x 49.5   38.5 in front of the VP   44.1 above the HP
+  true angle DE ^ ABC   23.29°
+  front view: hidden from t = 0.472 to 0.792   (nearer = more depth)
+  top view:   hidden from t = 0.472 to 0.673   (nearer = more height)
+  DE measures: front 109.2  top 110.7  aux1 83.6  aux2 105.3  aux3 114.7 (true)
+```
+
+`solve()` checks that the piercing point lies on the plane and inside the
+triangle, that the cut line passes through it, that each auxiliary view does
+its job, and that the angle read off the finished drawing equals the angle
+computed from the plane's normal.
+
 ---
 
 ### The five scenes
@@ -75,6 +102,19 @@ on screen is asserted equal to θH before the arc is built.
 | `S05_Recap` | 1:15 | The two rules against a miniature of the finished sheet, the mirror-image method for the inclination with the VP (44.7° for this plate — Q.7), and the one check that catches the usual mistake. |
 
 Total ≈ 11 minutes.
+
+### Episode 07 — the six scenes
+
+| Scene | ≈ | What it does |
+|---|---|---|
+| `S01_ThePiercingPoint` | 2:15 | The figure standing in space. One point belongs to the line and the plate at once — and from that moment half the line is hidden. Both observers' rays of sight are followed in: each meets the plate before it meets the line, at a different place, and the camera then moves to each observer's own position to show the view he draws, dashes and all. |
+| `S02_CuttingPlane` | 2:30 | The method built in space before it is used on paper. A sheet of glass is stood through the line, slicing the plate along 1–2; the camera looks at the glass **face on** (two lines in one plane must cross — there is the piercing point), then from **straight above**, where the glass collapses onto the top view of the line. That is why the cutting plane never has to be drawn. |
+| `S03_Piercing` | 3:20 | Q.11 part one on the sheet: the crossings 1 and 2, carried up and joined, p′ and p. Then visibility settled the way it should be — at each crossing the two candidates are compared in the *other* view, heights for the top view and depths for the front view, with the verdict marked. |
+| `S04_TrueAngleA` | 1:35 | Why the angle is awkward: it needs one view with the plate edge-on **and** the line true length. The horizontal line that aims X1Y1, then auxiliary 1 (edge view) and auxiliary 2 (true shape). |
+| `S05_TrueAngleB` | 1:15 | X3Y3 drawn parallel to the line's image, and both things happen at once: the plate closes up again, and the line comes out at 114.7 mm — its true length, longer than in any earlier view. The angle is then measured: 23.3°. |
+| `S06_Recap` | 1:35 | Three jobs, three tools, drawn as one chain: the cutting plane branch needs no auxiliary at all; the angle branch needs three. |
+
+Total ≈ 12–13 minutes.
 
 ### Stitching the five clips
 

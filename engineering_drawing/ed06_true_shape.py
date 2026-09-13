@@ -54,13 +54,17 @@ from ed_common import (
     VIOLET,
     billboard,
     caption,
+    card_back,
     chip,
     finish_audio,
     fly_camera,
+    frame_target,
     hud,
+    look_at,
     mono,
     narrate,
     pin_to_frame,
+    rail_focus,
     title_bar,
 )
 
@@ -88,8 +92,6 @@ GAP2 = 52.0     # X2Y2 set back from the edge view (searched: keeps the true
 MM = 0.0297     # drawing millimetre -> Manim unit (the flat sheet)
 S3 = 0.030      # millimetre -> Manim unit in the 3-D stage
 X_MID = 38.0    # the x that is centred in the 3-D stage
-
-ASPECT = config.frame_width / config.frame_height
 
 
 def construction():
@@ -219,29 +221,6 @@ def step_badge(number, title, detail, color):
     detail_mob = mono(detail, color=SLATE, size=13)
     words = VGroup(title_mob, detail_mob).arrange(DOWN, buff=0.06, aligned_edge=LEFT)
     return VGroup(number_mob, words).arrange(RIGHT, buff=0.18, aligned_edge=UP)
-
-
-def frame_target(mobs, pad=0.45, right=0.30, top=0.20):
-    """
-    Where the camera has to sit for `mobs` to be comfortably readable.
-
-    The right-hand strip of the screen belongs to the step rail and the top
-    strip to the caption, so the drawing is fitted into what is left rather
-    than into the whole frame - that is why the construction never ends up
-    hiding behind the furniture.
-    """
-    g = VGroup(*mobs)
-    w, h = g.width + 2 * pad, g.height + 2 * pad
-    W = float(max(w / (1.0 - right), (h / (1.0 - top)) * ASPECT, 5.0))
-    H = W / ASPECT
-    c = g.get_center()
-    return np.array([c[0] + right * W / 2.0, c[1] + top * H / 2.0, 0.0]), W
-
-
-def look_at(scene, mobs, **kw):
-    """The camera animation that brings `mobs` into the clear part of the screen."""
-    centre, W = frame_target(mobs, **kw)
-    return scene.camera.frame.animate.set(width=W).move_to(centre)
 
 
 # ==========================================================================
@@ -696,44 +675,9 @@ class S03_Strategy(Scene):
 
 # ==========================================================================
 #  S04 - the whole solution, with the camera following the pencil
+#  (card_back, rail_focus, frame_target and look_at are shared series
+#  furniture and live in ed_common.py)
 # ==========================================================================
-def card_back(mob, pad=0.24, opacity=0.9):
-    """
-    A dark backing card behind a piece of screen furniture.
-
-    The camera roams over a sheet that has drawing on all sides of it, so
-    sooner or later a projector or a triangle passes behind the caption. The
-    card keeps the words readable when that happens, and costs nothing when it
-    does not.
-    """
-    back = RoundedRectangle(width=mob.width + 2 * pad, height=mob.height + 2 * pad,
-                            corner_radius=0.12, stroke_width=0,
-                            fill_color=NAVY, fill_opacity=opacity).move_to(mob)
-    return VGroup(back, mob)
-
-
-def rail_focus(panel, rungs, active, dim_level=0.26):
-    """
-    Light the rung of the step rail we are on and dim the rest.
-
-    One animation, on the WHOLE pinned panel, and it touches nothing but
-    opacity. Both of those matter. Animating a single rung would make Manim add
-    that rung to the scene in its own right, which quietly dismantles the VGroup
-    around it - and that VGroup is what pin_to_frame() hangs on the camera, so
-    the rail would stop following the camera and drift off the top of the
-    screen. Touching only opacity keeps the animation clear of the same updater.
-    """
-    starts = list(panel.levels)
-    targets = [1.0 if i == active else dim_level for i in range(len(rungs))]
-    panel.levels = targets
-
-    def _relight(mob, alpha):
-        for rung, a, b in zip(rungs, starts, targets):
-            rung.set_opacity(interpolate(a, b, alpha))
-
-    return UpdateFromAlphaFunc(panel, _relight)
-
-
 class S04_Construction(MovingCameraScene):
     def construct(self):
         self.camera.background_color = NAVY

@@ -11,6 +11,10 @@ the CFD series. This module only adds what the drawing episodes need on top:
     half_turn()    a 180 degree camera orbit timed to the narration
     fly_camera()   a scripted 3-D camera move timed to the narration
     pin_to_frame() hold a mobject still on SCREEN in a MovingCameraScene
+    frame_target() where the camera must sit for a group to be readable
+    look_at()      the camera animation that gets it there
+    card_back()    a dark backing card behind screen furniture
+    rail_focus()   light one rung of a step rail and dim the rest
     title_bar()    the standing top-left caption
     chip()         a boxed callout tag
     caption()      heading-font text
@@ -31,9 +35,12 @@ from manim import (
     UP,
     Line,
     Rectangle,
+    RoundedRectangle,
     Text,
+    UpdateFromAlphaFunc,
     VGroup,
     config,
+    interpolate,
 )
 import numpy as _np
 
@@ -273,6 +280,73 @@ def pin_to_frame(scene, mob, corner=UP + LEFT, buff=0.42):
     _hang(mob)
     mob.add_updater(_hang)
     return mob
+
+
+def frame_target(mobs, pad=0.45, right=0.30, top=0.20):
+    """
+    Where the camera has to sit for `mobs` to be comfortably readable.
+
+    The right-hand strip of the screen belongs to the step rail and the top
+    strip to the caption, so the drawing is fitted into what is LEFT rather
+    than into the whole frame - that is why a zoomed construction never ends up
+    hiding behind the furniture. Returns (centre, width) for the camera frame.
+    """
+    aspect = config.frame_width / config.frame_height
+    g = VGroup(*mobs)
+    w, h = g.width + 2 * pad, g.height + 2 * pad
+    width = float(max(w / (1.0 - right), (h / (1.0 - top)) * aspect, 5.0))
+    height = width / aspect
+    c = g.get_center()
+    return _np.array([c[0] + right * width / 2.0,
+                      c[1] + top * height / 2.0, 0.0]), width
+
+
+def look_at(scene, mobs, **kw):
+    """The camera animation that brings `mobs` into the clear part of the screen."""
+    centre, width = frame_target(mobs, **kw)
+    return scene.camera.frame.animate.set(width=width).move_to(centre)
+
+
+def card_back(mob, pad=0.24, opacity=0.9, color=None):
+    """
+    A dark backing card behind a piece of screen furniture.
+
+    A camera that roams over a sheet with drawing on all sides of it will
+    sooner or later pass a projector or a triangle behind the caption. The card
+    keeps the words readable when that happens, and costs nothing when it does
+    not.
+    """
+    back = RoundedRectangle(width=mob.width + 2 * pad, height=mob.height + 2 * pad,
+                            corner_radius=0.12, stroke_width=0,
+                            fill_color=color or NAVY, fill_opacity=opacity)
+    back.move_to(mob)
+    return VGroup(back, mob)
+
+
+def rail_focus(panel, rungs, active, dim_level=0.26):
+    """
+    Light the rung of the step rail we are on and dim the rest.
+
+    One animation, on the WHOLE pinned panel, and it touches nothing but
+    opacity. Both of those matter. Animating a single rung would make Manim add
+    that rung to the scene in its own right, which quietly dismantles the VGroup
+    around it - and that VGroup is what pin_to_frame() hangs on the camera, so
+    the rail would stop following the camera and drift off the top of the
+    screen. Touching only opacity keeps the animation clear of the same updater.
+
+    `active` is the index to light, or a collection of indices; anything not in
+    it is dimmed. `panel.levels` carries the current opacities between calls.
+    """
+    lit = set(active) if isinstance(active, (list, tuple, set, range)) else {active}
+    starts = list(panel.levels)
+    targets = [1.0 if i in lit else dim_level for i in range(len(rungs))]
+    panel.levels = targets
+
+    def _relight(mob, alpha):
+        for rung, a, b in zip(rungs, starts, targets):
+            rung.set_opacity(interpolate(a, b, alpha))
+
+    return UpdateFromAlphaFunc(panel, _relight)
 
 
 # --------------------------------------------------------------------------
