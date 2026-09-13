@@ -1,0 +1,5 @@
+# Manim output and the narration cache - both are rebuilt by a render
+media/
+__pycache__/
+*.pyc
+list.txt

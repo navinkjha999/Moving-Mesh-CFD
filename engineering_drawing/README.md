@@ -1,0 +1,109 @@
+# Engineering Drawing I — Episode 06
+## Edge View, True Shape and True Size of an Oblique Plane
+
+Manim CE 0.20.1 source for a ten-minute YouTube lesson on finding the true
+shape of a plane that is inclined to **both** the horizontal and the vertical
+plane, worked through Exercise 4 (Set A), Q.6 of Sheet 4 — *Basic Descriptive
+Geometry II*.
+
+```
+ed06_true_shape.py    the episode: five scenes, all the narration, all the geometry
+ed_stage.py           the shared 3-D stage (HP, VP, XY, the four quadrants)
+ed_common.py          thin shim over cfd_common: narration, HUD and camera helpers
+cfd_common.py         the series infrastructure (voice, cache, loudnorm, fonts)
+render_ed06.bat       renders the five scenes in running order at 1080p60
+```
+
+---
+
+### Render
+
+```bat
+render_ed06.bat                              REM all five scenes, 1080p60
+py -3.11 -m manim -qh ed06_true_shape.py S04_Construction
+py -3.11 -m manim -ql ed06_true_shape.py S02_EdgeViewIdea      REM quick look
+```
+
+Needs `manim==0.20.1`, `edge-tts`, and `ffmpeg` on the PATH. The fonts are
+Bahnschrift and Cascadia Mono, both shipped with Windows; on another machine
+change `H_FONT` / `M_FONT` in `cfd_common.py` or Manim will quietly substitute
+something proportional for the measurement labels.
+
+Set `EFS_SILENT=1` to render with silence instead of speech. The scene timings
+are unchanged (they come from a word-count estimate), so it is the fast way to
+check layout and pacing. Narration is cached under `media/narration/<Scene>/`,
+so a re-render never re-synthesises a line you have not edited.
+
+### Check the answers before rendering
+
+```bat
+py -3.11 ed06_true_shape.py
+```
+
+prints the worked solution the animation is about to draw:
+
+```
+  θ with the HP            52.55°
+  θ with the VP (Q.7)      44.71°
+  AB   true    81.40 mm   front view   77.47   top view   80.01
+  BC   true    64.67 mm   front view   59.64   top view   42.20
+  CA   true    73.62 mm   front view   54.04   top view   65.30
+```
+
+Nothing in the drawing is placed by eye. `construction()` derives every point
+from the five given dimensions and asserts, before a frame is rendered, that
+
+* the three points of the first auxiliary really are collinear (it is an edge
+  view, not nearly an edge view),
+* the angle that line makes with X1Y1 equals the inclination computed from the
+  space coordinates, and
+* each side of the true shape equals the true distance between the space points.
+
+`S02_EdgeViewIdea` makes the same check in three dimensions: the angle it draws
+on screen is asserted equal to θH before the arc is built.
+
+---
+
+### The five scenes
+
+| Scene | ≈ | What it does |
+|---|---|---|
+| `S01_WhyBothViewsLie` | 2:10 | The plate in the first angle, tilted to both planes. Both views are projected onto the planes, then one side — AB — is measured three times: 81.4 mm in space, 77.5 in the front view, 80.0 in the top view. Foreshortening stops being a word and becomes a number. Ends on the rule: true shape needs a plane of projection **parallel** to the plane. |
+| `S02_EdgeViewIdea` | 2:30 | A sheet of paper is turned until it is edge on and becomes a line. Then the same is done to the plate: a horizontal line of the plate is drawn, its top view shown to be true length, and **the camera swings round to look along it** — the plate closes up into its edge view on screen, and the angle with the (now edge-on) HP is θH = 52.5°. |
+| `S03_Strategy` | 1:45 | The four steps, then the chain of views — front → top → edge → true shape — with the two "carry it forward" arcs that show why heights come from the front view and distances from the top view. |
+| `S04_Construction` | 3:50 | Q.6 solved on one sheet. The camera follows the pencil, zooming into whichever view is being drawn, and every transferred dimension physically flies from the view it was measured in to the view it lands in, each corner keeping its own colour. |
+| `S05_Recap` | 1:15 | The two rules against a miniature of the finished sheet, the mirror-image method for the inclination with the VP (44.7° for this plate — Q.7), and the one check that catches the usual mistake. |
+
+Total ≈ 11 minutes.
+
+### Stitching the five clips
+
+```bat
+(echo file 'S01_WhyBothViewsLie.mp4' & echo file 'S02_EdgeViewIdea.mp4' & echo file 'S03_Strategy.mp4' & echo file 'S04_Construction.mp4' & echo file 'S05_Recap.mp4') > list.txt
+ffmpeg -f concat -safe 0 -i list.txt -c copy ed06_true_shape.mp4
+```
+
+Suggested chapters for the description (adjust to the rendered lengths):
+
+```
+00:00  Why neither view is the true shape
+02:10  Look along the plane: the edge view
+04:40  The four steps, and the rule students get wrong
+06:25  Q.6 worked: edge view, θ with the HP, true shape
+10:15  Recap, and the same trick for the VP
+```
+
+---
+
+### Conventions the episode keeps
+
+* **Colour is meaning.** Coral is the vertical plane and the front view, teal the
+  horizontal plane and the top view, gold the object and the answers, cream the
+  construction lines that only exist to get you there. Each corner keeps its own
+  colour — A coral, B teal, C violet — through all four views, so a single
+  corner can be followed by eye through the transfers.
+* **One plate throughout.** The triangle that tilts in space in S01 and S02 is
+  built from the same five dimensions as the sheet solved in S04, at a different
+  scale. The 3-D picture and the drawing are the same problem.
+* **No LaTeX.** Every glyph is Unicode `Text()`, so the file renders on a machine
+  with no TeX installed.
