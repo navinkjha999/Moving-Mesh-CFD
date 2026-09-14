@@ -161,8 +161,8 @@ def solve(gaps=GAPS):
                             space=p[e0] + b * (p[e1] - p[e0])))
     assert len(cut) == 2, "the cutting plane should cross exactly two edges"
     cut.sort(key=lambda c: c["t"])
-    for c in cut:                                   # the cut passes through P
-        pass
+
+    # the whole method rests on this: the slice and the line meet at P
     span = cut[1]["space"] - cut[0]["space"]
     along = float(np.dot(P - cut[0]["space"], span) / np.dot(span, span))
     assert 0 < along < 1 and np.linalg.norm(
@@ -1210,8 +1210,6 @@ class S05_TrueAngleB(MovingCameraScene):
         sweep = (a_end - a_start + PI) % TAU - PI
         arc = Arc(radius=0.45, start_angle=a_start, angle=sweep,
                   arc_center=vertex, color=GOLD, stroke_width=3.0)
-        # a 23 degree wedge is too narrow to hold the value, so the label sits
-        # just outside it, on the far side of the bisector
         # a 23 degree wedge will hold the value if the label lies ALONG the
         # bisector: what has to fit between the arms is its height, not its width
         bis = a_start + sweep / 2.0
