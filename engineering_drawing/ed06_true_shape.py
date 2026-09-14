@@ -7,7 +7,7 @@ Render (Windows, py -3.11):
     py -3.11 -m manim -qh ed06_true_shape.py S04_Construction
     ... or use render_ed06.bat to build all five scenes in order.
 
-Scene order (about ten minutes in all):
+Scene order (about eleven minutes in all):
 
     S01_WhyBothViewsLie   the plate is tilted to BOTH planes, so both views lie -
                           and one side, measured three times, proves it
@@ -47,7 +47,6 @@ from ed_common import (
     CREAM,
     GOLD,
     INK,
-    MUTED,
     NAVY,
     SLATE,
     TEAL,

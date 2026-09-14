@@ -47,7 +47,7 @@ import math
 import numpy as np
 from manim import *
 
-from ed_stage import CAM_PHI, CAM_THETA, ProjectionScene, marker, projector
+from ed_stage import ProjectionScene, marker
 from ed_common import (
     CORAL,
     CREAM,

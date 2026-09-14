@@ -7,7 +7,7 @@ Render (Windows, py -3.11):
     py -3.11 -m manim -qh ed08_dihedral_angle.py S03_Construction
     ... or use render_ed08.bat to build all four scenes in order.
 
-Scene order (about nine minutes in all):
+Scene order (about eight minutes in all):
 
     S01_Dihedral      what the angle between two planes IS: the two faces are
                       folded open about their common edge in front of you, and
@@ -38,13 +38,11 @@ from manim import *
 from ed_stage import CAM_PHI, CAM_THETA, ProjectionScene, marker
 from ed_common import (
     CORAL,
-    CREAM,
     GOLD,
     INK,
     MUTED,
     NAVY,
     SLATE,
-    TEAL,
     VIOLET,
     billboard,
     caption,
@@ -86,7 +84,6 @@ ALL = ("A", "B", "C", "D")
 F1_COL = VIOLET          # face A B C
 F2_COL = CORAL           # face D B C
 HINGE_COL = GOLD
-CUT_COL = CREAM          # transfer marks: scaffolding, not answer
 
 GAPS = (40.0, 15.0)      # X1Y1 and X2Y2 set-backs. 40 rather than 32 for the
                          # first one: a is the deepest point in the top view and
@@ -210,11 +207,6 @@ def hinge_of(pts, width=5.0):
 def riser(a, b, colour, width=1.0, opacity=0.5):
     return DashedLine(P2(a), P2(b), color=colour, stroke_width=width,
                       stroke_opacity=opacity, dash_length=0.05)
-
-
-def rays_between(src, dst, colour=MUTED):
-    return VGroup(*[riser(src[k], dst[k], colour, width=0.9, opacity=0.45)
-                    for k in src])
 
 
 def dim(p_from, p_to, text, colour, size=14, offset=0.0, gap=7.0):
@@ -660,7 +652,6 @@ class S03_Construction(MovingCameraScene):
         u1, n1, p0 = G["u1"], G["n1"], G["p0"]
         u2, w2, q0 = G["u2"], G["w2"], G["q0"]
         n1d = np.array([n1[0], n1[1], 0.0])
-        u2d = np.array([u2[0], u2[1], 0.0])
 
         # ---------------- the given views -------------------------------------
         xy = Line(P2(np.array([-18.0, 0.0])), P2(np.array([92.0, 0.0])),

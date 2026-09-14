@@ -111,7 +111,7 @@ the perpendicular components about the hinge and the two face normals.
 
 ---
 
-### The five scenes
+### Episode 06 — the five scenes
 
 | Scene | ≈ | What it does |
 |---|---|---|
@@ -147,14 +147,43 @@ Total ≈ 12–13 minutes.
 
 Total ≈ 8 minutes.
 
-### Stitching the five clips
+### Stitching the clips
+
+Each scene renders to its own file under
+`media\videos\<episode>\1080p60\`. Concatenate them in running order —
+`-c copy`, because they share one encoder setting and there is nothing to
+re-encode. Run each block from inside that folder.
+
+**Episode 06**
 
 ```bat
 (echo file 'S01_WhyBothViewsLie.mp4' & echo file 'S02_EdgeViewIdea.mp4' & echo file 'S03_Strategy.mp4' & echo file 'S04_Construction.mp4' & echo file 'S05_Recap.mp4') > list.txt
 ffmpeg -f concat -safe 0 -i list.txt -c copy ed06_true_shape.mp4
 ```
 
-Suggested chapters for the description (adjust to the rendered lengths):
+**Episode 07**
+
+```bat
+(echo file 'S01_ThePiercingPoint.mp4' & echo file 'S02_CuttingPlane.mp4' & echo file 'S03_Piercing.mp4' & echo file 'S04_TrueAngleA.mp4' & echo file 'S05_TrueAngleB.mp4' & echo file 'S06_Recap.mp4') > list.txt
+ffmpeg -f concat -safe 0 -i list.txt -c copy ed07_piercing_point.mp4
+```
+
+**Episode 08**
+
+```bat
+(echo file 'S01_Dihedral.mp4' & echo file 'S02_Strategy.mp4' & echo file 'S03_Construction.mp4' & echo file 'S04_Recap.mp4') > list.txt
+ffmpeg -f concat -safe 0 -i list.txt -c copy ed08_dihedral_angle.mp4
+```
+
+Suggested chapters for the descriptions. The narration is timed from a word
+count, so these are close but not exact — read the real boundaries off the
+rendered clips with
+
+```bat
+for %%F in (S0*.mp4) do @ffprobe -v error -show_entries format=duration -of csv=p=0 %%F
+```
+
+Episode 06:
 
 ```
 00:00  Why neither view is the true shape
@@ -164,17 +193,47 @@ Suggested chapters for the description (adjust to the rendered lengths):
 10:15  Recap, and the same trick for the VP
 ```
 
+Episode 07:
+
+```
+00:00  The piercing point, and why half the line goes hidden
+02:15  The cutting plane, seen face on and from above
+04:45  Q.11 worked: the crossings, p′ and p, and visibility
+08:05  Why the true angle needs an edge view first
+09:40  Auxiliary 3: the line at 114.7 mm, the angle at 23.3°
+10:55  Recap: three jobs, three tools
+```
+
+Episode 08, off the rendered clips (137.3 s, 86.9 s, 189.3 s, 77.1 s):
+
+```
+00:00  What the angle between two planes is: the book and its hinge
+02:17  Two auxiliaries, and why the order is fixed
+03:44  Q.12 worked: BC true length, BC as a point, θ = 77.3°
+06:53  Recap, and the three numbers to check yourself against
+```
+
 ---
 
-### Conventions the episode keeps
+### Conventions the three episodes keep
 
-* **Colour is meaning.** Coral is the vertical plane and the front view, teal the
-  horizontal plane and the top view, gold the object and the answers, cream the
-  construction lines that only exist to get you there. Each corner keeps its own
-  colour — A coral, B teal, C violet — through all four views, so a single
-  corner can be followed by eye through the transfers.
-* **One plate throughout.** The triangle that tilts in space in S01 and S02 is
-  built from the same five dimensions as the sheet solved in S04, at a different
-  scale. The 3-D picture and the drawing are the same problem.
-* **No LaTeX.** Every glyph is Unicode `Text()`, so the file renders on a machine
+* **Colour is meaning, and it never changes mid-episode.** Coral is the vertical
+  plane and the front view, teal the horizontal plane and the top view, cream the
+  construction lines that only exist to get you there. What gold marks is
+  whatever the episode is chasing: in 06 the plate and its answers, in 07 the
+  line DE, in 08 the hinge BC. Within an episode every object keeps one colour
+  through every view — in 06 the corners (A coral, B teal, C violet), in 07 the
+  plate violet against the gold line, in 08 the two faces (ABC violet, DBC
+  coral) — so one thing can be followed by eye from the given views all the way
+  into the last auxiliary.
+* **One figure throughout.** The solid that tilts in space in the opening scenes
+  is built from the same given dimensions as the sheet solved later, only at a
+  different scale. The 3-D picture and the drawing are the same problem, not an
+  illustration of it.
+* **Nothing is placed by eye.** Every point comes out of the episode's `solve()`
+  or `construction()`, which asserts what the narration is about to claim —
+  that the edge view really is collinear, that the auxiliary really is true
+  length, that the point view really is one point. A wrong number stops the
+  render instead of reaching YouTube.
+* **No LaTeX.** Every glyph is Unicode `Text()`, so the files render on a machine
   with no TeX installed.
