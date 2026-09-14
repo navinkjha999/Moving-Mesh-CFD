@@ -1,21 +1,25 @@
 # Engineering Drawing I — Sheet 4, *Basic Descriptive Geometry II*
 
-Manim CE 0.20.1 source for two YouTube lessons:
+Manim CE 0.20.1 source for three YouTube lessons:
 
 * **Episode 06 — Edge View, True Shape and True Size of an Oblique Plane**
   (Exercise 4, Set A, Q.6), about eleven minutes.
 * **Episode 07 — Where a Line Pierces a Plane**: the piercing point, the
   hidden stretch, and the true angle (Exercise 4, Set A, Q.11), about
   thirteen minutes.
+* **Episode 08 — The True Angle Between Two Planes**: the dihedral angle
+  (Exercise 4, Set A, Q.12), about eight minutes.
 
 ```
 ed06_true_shape.py      episode 06: five scenes, all the narration, all the geometry
 ed07_piercing_point.py  episode 07: six scenes
+ed08_dihedral_angle.py  episode 08: four scenes
 ed_stage.py             the shared 3-D stage (HP, VP, XY, the four quadrants)
 ed_common.py            thin shim over cfd_common: narration, HUD and camera helpers
 cfd_common.py           the series infrastructure (voice, cache, loudnorm, fonts)
 render_ed06.bat         renders episode 06 in running order at 1080p60
 render_ed07.bat         renders episode 07 in running order at 1080p60
+render_ed08.bat         renders episode 08 in running order at 1080p60
 ```
 
 ---
@@ -25,7 +29,8 @@ render_ed07.bat         renders episode 07 in running order at 1080p60
 ```bat
 render_ed06.bat                              REM all five scenes, 1080p60
 render_ed07.bat                              REM all six scenes
-render_ed07.bat S03                          REM just that one scene
+render_ed08.bat                              REM all four scenes
+render_ed08.bat S03                          REM just that one scene
 py -3.11 -m manim -qh ed06_true_shape.py S04_Construction
 py -3.11 -m manim -ql ed07_piercing_point.py S02_CuttingPlane   REM quick look
 ```
@@ -50,6 +55,7 @@ so a re-render never re-synthesises a line you have not edited.
 ```bat
 py -3.11 ed06_true_shape.py
 py -3.11 ed07_piercing_point.py
+py -3.11 ed08_dihedral_angle.py
 ```
 
 Each prints the worked solution its animation is about to draw. Episode 06:
@@ -89,6 +95,20 @@ triangle, that the cut line passes through it, that each auxiliary view does
 its job, and that the angle read off the finished drawing equals the angle
 computed from the plane's normal.
 
+Episode 08 likewise:
+
+```
+  hinge BC:  front view  49.68   top view  39.29   TRUE LENGTH  50.68 mm
+  at the point view:  a2 49.16 mm   d2 51.24 mm   a2-d2 62.72 mm
+  TRUE DIHEDRAL ANGLE  θ = 77.28°   (77° 17')
+```
+
+Its `solve()` asserts that the first auxiliary shows BC at true length, that
+the second reduces it to a single point, that folding one face about the hinge
+by θ lays it exactly on the other, and that the angle read at the point view
+equals the one computed from the space coordinates — by two independent routes,
+the perpendicular components about the hinge and the two face normals.
+
 ---
 
 ### The five scenes
@@ -115,6 +135,17 @@ Total ≈ 11 minutes.
 | `S06_Recap` | 1:35 | Three jobs, three tools, drawn as one chain: the cutting plane branch needs no auxiliary at all; the angle branch needs three. |
 
 Total ≈ 12–13 minutes.
+
+### Episode 08 — the four scenes
+
+| Scene | ≈ | What it does |
+|---|---|---|
+| `S01_Dihedral` | 2:20 | The two faces in space, hinged on the edge they share. The far face is folded shut onto the near one and opened again — that swing *is* the angle, and `solve()` asserts that folding by θ closes the book exactly. Then the camera goes and stands at the end of the hinge: B and C line up into one point, both faces flatten into lines, and the angle is there to read. Step off that line and it distorts again. |
+| `S02_Strategy` | 1:30 | Why the order is fixed: a line reaches a point view only from a view that already shows it true length. A generic line is put through both auxiliaries at the side of the screen — a real construction at small scale, asserted true length and asserted point view, not a sketch. |
+| `S03_Construction` | 3:10 | Q.12 on one sheet, the camera following the chain down it: X1Y1 ∥ bc with the heights carried across and flown into place, bc measured at 50.7 mm true length against 49.7 and 39.3 in the given views, then X2Y2 ⊥ b₁c₁ with the distances carried from two views back, b₂c₂ closing to a point, and the angle read at 77.3°. |
+| `S04_Recap` | 1:15 | The method in four lines and one chain, with the three numbers to check yourself against. |
+
+Total ≈ 8 minutes.
 
 ### Stitching the five clips
 
