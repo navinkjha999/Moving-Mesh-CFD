@@ -3,7 +3,7 @@ REM ---------------------------------------------------------------------------
 REM  Engineering Drawing I - Episode 07: Where a Line Pierces a Plane
 REM  Renders the six scenes in running order at 1080p60.
 REM
-REM    render_ed07.bat            all five scenes
+REM    render_ed07.bat            all six scenes
 REM    render_ed07.bat S04        just the one whose name starts with S04
 REM
 REM  Run it once with EFS_SILENT=1 set if you want to check the timing and the
