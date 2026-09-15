@@ -71,6 +71,7 @@ from ed_common import (
     narrate,
     pin_to_frame,
     rail_focus,
+    settle,
     title_bar,
 )
 
@@ -695,7 +696,7 @@ class S02_CuttingPlane(ProjectionScene):
             self,
             "That gives the point, and with it the visibility. The true angle is a "
             "separate job, and for that we do need auxiliary views.",
-            FadeIn(note),
+            settle(FadeIn(note)),
         )
 
         finish_audio(self)
@@ -1002,8 +1003,7 @@ class S03_Piercing(MovingCameraScene):
             "line is visible throughout; the E half is hidden from the piercing point "
             "out to the edge of the triangle, and the two views hide different "
             "amounts of it.",
-            FadeOut(data), FadeIn(ans),
-            lag_ratio=0.3,
+            settle(FadeOut(data), FadeIn(ans)),
         )
 
         finish_audio(self)

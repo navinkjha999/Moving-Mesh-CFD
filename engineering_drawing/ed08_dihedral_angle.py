@@ -57,6 +57,7 @@ from ed_common import (
     narrate,
     pin_to_frame,
     rail_focus,
+    settle,
     title_bar,
 )
 
@@ -634,8 +635,7 @@ class S02_Strategy(Scene):
             "view second. And if your point view does not come out as one single "
             "point, the mistake is almost always that X two Y two was not exactly "
             "perpendicular to the true length.",
-            FadeIn(rule[0]), FadeIn(rule[1]),
-            lag_ratio=0.35,
+            settle(FadeIn(rule[0]), FadeIn(rule[1])),
         )
 
         finish_audio(self)

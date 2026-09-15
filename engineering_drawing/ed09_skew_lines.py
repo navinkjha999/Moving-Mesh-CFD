@@ -62,6 +62,7 @@ from ed_common import (
     narrate,
     pin_to_frame,
     rail_focus,
+    settle,
     title_bar,
 )
 
@@ -548,14 +549,22 @@ class S01_TheyDoNotMeet(ProjectionScene):
             mono("get ONE line to a POINT VIEW", color=AB_COL, size=30),
             mono("the answer is the PERPENDICULAR from it", color=SD_COL, size=30),
         ).arrange(DOWN, buff=0.16).move_to(mid - up * 1.15))
+        # narrate() stretches its animations over the whole sentence, which is
+        # right for a line being drawn as it is described and quite wrong for a
+        # caption: on a fifty-word sentence the fade lasts thirteen seconds and
+        # the words are still half lit when the scene ends. So the panel comes
+        # in on a short sentence, and the explanation is spoken over it.
         narrate(
             self,
-            "That is the whole episode in one picture. Get a view in which one of "
-            "the lines is a point. The shortest distance to the other line is then "
-            "simply the perpendicular dropped from that point - and it is true "
-            "length, because it is square to the line you are looking down.",
-            FadeIn(sd_lab), FadeIn(note),
-            lag_ratio=0.3,
+            "That is the whole episode in one picture.",
+            settle(FadeIn(sd_lab), FadeIn(note)),
+        )
+        narrate(
+            self,
+            "Get a view in which one of the lines is a point. The shortest distance "
+            "to the other line is then simply the perpendicular dropped from that "
+            "point - and it is true length, because it is square to the line you are "
+            "looking down.",
         )
 
         finish_audio(self)
@@ -696,12 +705,15 @@ class S02_Strategy(Scene):
         ).arrange(DOWN, buff=0.18).to_edge(DOWN, buff=0.45)
         narrate(
             self,
-            "Two things worth knowing. It does not matter which of the two lines you "
-            "take to the point view - the shortest distance between them is the same "
-            "either way. And whatever you do, do not measure the answer in the given "
-            "views. We will see in a moment just how wrong that goes.",
-            FadeIn(rule[0]), FadeIn(rule[1]),
-            lag_ratio=0.35,
+            "Two things are worth writing down.",
+            settle(FadeIn(rule[0]), FadeIn(rule[1])),
+        )
+        narrate(
+            self,
+            "It does not matter which of the two lines you take to the point view - "
+            "the shortest distance between them is the same either way. And whatever "
+            "you do, do not measure the answer in the given views. We will see in a "
+            "moment just how wrong that goes.",
         )
 
         finish_audio(self)

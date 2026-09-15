@@ -349,6 +349,26 @@ def rail_focus(panel, rungs, active, dim_level=0.26):
     return UpdateFromAlphaFunc(panel, _relight)
 
 
+
+def settle(*anims, share: float = 0.2, lag: float = 0.12):
+    """Land `anims` early in a narrate() span instead of over the whole of it.
+
+    narrate() stretches whatever it is handed across the entire sentence. That
+    is exactly right for a line being drawn as it is described, and exactly
+    wrong for a caption: on a fifty-word sentence a FadeIn becomes a thirteen
+    second creep which is fully lit only as the scene begins to fade out. With
+    TAIL_PAD at 0.35 s, the closing line of a scene - the one a viewer would
+    pause on - is legible for about a third of a second.
+
+    Succession keeps the proportions between its parts when the outer play()
+    rescales it, so pairing the animation with a Wait pins it to `share` of
+    whatever the sentence turns out to last: the words land in the first fifth
+    and stay lit for the rest, at any sentence length.
+    """
+    group = anims[0] if len(anims) == 1 else AnimationGroup(*anims, lag_ratio=lag)
+    return Succession(group, Wait(group.run_time * (1.0 - share) / share))
+
+
 # --------------------------------------------------------------------------
 # Typography / furniture
 # --------------------------------------------------------------------------

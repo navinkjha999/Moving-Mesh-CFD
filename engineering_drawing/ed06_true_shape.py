@@ -64,6 +64,7 @@ from ed_common import (
     narrate,
     pin_to_frame,
     rail_focus,
+    settle,
     title_bar,
 )
 
@@ -365,8 +366,7 @@ class S01_WhyBothViewsLie(ProjectionScene):
             "that is parallel to it. Neither the H P nor the V P is parallel to this "
             "plate, so we shall have to invent one that is. That is an auxiliary "
             "plane, and this time we shall need two of them.",
-            FadeOut(card), FadeIn(rule),
-            lag_ratio=0.4,
+            settle(FadeOut(card), FadeIn(rule)),
         )
 
         finish_audio(self)
@@ -565,7 +565,7 @@ class S02_EdgeViewIdea(ProjectionScene):
             "the plate, so on the sheet the new reference line is drawn "
             "perpendicular to the top view of that line. Perpendicular, because we "
             "are looking straight along it.",
-            FadeIn(note),
+            settle(FadeIn(note)),
         )
 
         finish_audio(self)
@@ -1021,8 +1021,7 @@ class S04_Construction(MovingCameraScene):
             f"The plate is inclined to the horizontal plane at {G['theta']:.1f} "
             "degrees, and the triangle at the far end is its true shape and true "
             "size. Both answers came out of the same two auxiliary views.",
-            FadeIn(ans),
-            rail_focus(rail, rungs, -1, dim_level=0.5),
+            settle(FadeIn(ans), rail_focus(rail, rungs, -1, dim_level=0.5)),
         )
 
         finish_audio(self)
