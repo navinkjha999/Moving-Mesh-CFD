@@ -699,7 +699,7 @@ class S03_TrueShape(MovingCameraScene):
             dim(fv(RAD, 0), fv(RAD, HEIGHT), f"{HEIGHT:.0f}", SLATE,
                 size=13, offset=-12.0, gap=5.0),
             mono(f"Ø{DIA:.0f}", color=SLATE, size=13).move_to(tv(0, -RAD - 9)),
-            mono("45°", color=CUT_COL, size=14).move_to(fv(-1, 25)),
+            mono("45°", color=CUT_COL, size=14).move_to(fv(1, 28)),
         )
 
         # ---------------- twelve divisions ------------------------------------
@@ -749,9 +749,9 @@ class S03_TrueShape(MovingCameraScene):
         shape.set_points_as_corners(ring + [ring[0]])
 
         major = dim(aux_point(-RAD, CUT_AT, 0), aux_point(G["x_top"], HEIGHT, 0),
-                    f"{G['slant']:.1f}", CUT_COL, size=13, offset=0.0, gap=5.5)
+                    f"{G['slant']:.1f}", CUT_COL, size=13, offset=26.0, gap=6.0)
         minor = dim(aux_point(0, plane_z(0), -RAD), aux_point(0, plane_z(0), RAD),
-                    f"{DIA:.0f}", CUT_COL, size=13, offset=0.0, gap=5.5)
+                    f"{DIA:.0f}", CUT_COL, size=13, offset=-30.0, gap=6.0)
         aux = VGroup(x1, x1_lab, ra, aux_risers, aux_pts, shape)
 
         sheet = VGroup(given, dims, marks, numbers, spokes, chord, risers,
@@ -827,11 +827,20 @@ class S03_TrueShape(MovingCameraScene):
             Create(risers), FadeIn(cut_pts),
             lag_ratio=0.15,
         )
-        _, n_up = cut_dir()
-        heights = VGroup(*[
-            mono(f"{g['z']:.1f}", color=CUT_COL, size=11).move_to(
-                fv(g["x"], g["z"]) + n_up * 5.0 * MM)
-            for g in G["gens"][:4]])
+        # The first four generators are bunched into the left third of the
+        # front view, so labelling them where they stand puts four numbers on
+        # top of each other and on the cut line. A column off to the side,
+        # with a leader to each point, says the same thing and can be read.
+        rows = VGroup(*[mono(f"{g['k']}  →  {g['z']:.1f}", color=CUT_COL, size=12)
+                        for g in G["gens"][:4]]
+                      ).arrange(DOWN, buff=0.1, aligned_edge=LEFT)
+        rows.move_to(fv(-54, 30))
+        leaders = VGroup(*[
+            DashedLine(rows[i].get_right() + RIGHT * 0.06, fv(g["x"], g["z"]),
+                       color=CUT_COL, stroke_width=0.9, stroke_opacity=0.45,
+                       dash_length=0.05)
+            for i, g in enumerate(G["gens"][:4])])
+        heights = VGroup(rows, leaders)
         narrate(
             self,
             f"Generator one, at the seam, is the twenty we were given. Two is "
@@ -955,7 +964,7 @@ class S04_Development(MovingCameraScene):
 
         seam_l = Line(dev(0, 0), dev(0, G["gens"][0]["z"]), color=DEV_COL, stroke_width=4)
         seam_r = Line(dev(C, 0), dev(C, G["gens"][0]["z"]), color=DEV_COL, stroke_width=4)
-        tag_dev = chip("DEVELOPMENT", color=DEV_COL, size=13).move_to(dev(C * 0.86, 62))
+        tag_dev = chip("DEVELOPMENT", color=DEV_COL, size=13).move_to(dev(C * 0.13, 63))
 
         development = VGroup(base, ticks, tick_nums, risers, tops, curve,
                              seam_l, seam_r, break_dots)
