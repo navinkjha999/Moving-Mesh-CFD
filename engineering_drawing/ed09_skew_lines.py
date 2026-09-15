@@ -349,19 +349,23 @@ def space_lines(width=6.0):
 # ==========================================================================
 class S01_TheyDoNotMeet(ProjectionScene):
     quadrant = 1
-    heading = "The Shortest Distance Between Skew Lines"
+    heading = "Shortest Distance · Skew Lines"
     subheading = "Sheet 4 · §4.10 · the link that is square to both"
 
     def construct(self):
         self.build_stage()
+        self.badge.shift(DOWN * 0.5)           # clear of the heading
         self.set_camera_orientation(zoom=1.15)
         self.add(self.vp, self.hp, self.xy, *self.tags, self.bar)
 
         pts, ab, cd = space_lines()
-        nudge = {"A": np.array([-0.02, -0.10, -0.26]),
-                 "B": np.array([0.20, -0.10, 0.22]),
-                 "C": np.array([-0.18, -0.10, 0.22]),
-                 "D": np.array([0.24, -0.10, -0.24])}
+        # every nudge needs an x AND a y AND a z component: this scene looks
+        # along each axis in turn, and a label offset purely along the axis we
+        # are sighting down lands exactly on the point it is meant to name
+        nudge = {"A": np.array([-0.24, -0.16, -0.24]),
+                 "B": np.array([0.24, -0.16, 0.24]),
+                 "C": np.array([-0.24, 0.16, 0.24]),
+                 "D": np.array([0.24, 0.16, -0.24])}
         labs = VGroup(*[mono(k, color=AB_COL if k in "AB" else CD_COL, size=22)
                         .move_to(pts[k] + nudge[k]) for k in ALL])
         billboard(self, *labs)
@@ -510,7 +514,7 @@ class S01_TheyDoNotMeet(ProjectionScene):
             FadeOut(self.vp), FadeOut(self.hp), FadeOut(self.xy), FadeOut(self.tags),
             FadeOut(self.bar), FadeOut(self.badge), FadeOut(labs),
             phi=math.acos(cam[2]), theta=math.atan2(cam[1], cam[0]),
-            zoom=1.45, focal_distance=60.0, frame_center=mid,
+            zoom=2.2, focal_distance=60.0, frame_center=mid,
         )
         narrate(
             self,
@@ -521,8 +525,13 @@ class S01_TheyDoNotMeet(ProjectionScene):
             FadeIn(pv_dot), Create(pv_cd), Create(pv_mn),
             lag_ratio=0.25,
         )
+        # push the label off the link SIDEWAYS, in the collapse plane - "down"
+        # in world z is not down on screen from this viewpoint
+        link_dir = (flat_n - flat_m) / np.linalg.norm(flat_n - flat_m)
+        side = np.cross(axis, link_dir)
+        side = side / np.linalg.norm(side)
         sd_lab = billboard(self, mono(f"{G['sd']:.1f} mm", color=SD_COL, size=26)
-                           .move_to((flat_m + flat_n) / 2 + np.array([0.0, 0.0, -0.45])))
+                           .move_to((flat_m + flat_n) / 2 + side * 0.42))
         # A billboard, not a hud(): this shot is the one that re-centres the
         # camera, and a frame_center away from the origin drags Manim's
         # fixed-in-frame mobjects across the screen with it. So the note is
@@ -531,10 +540,10 @@ class S01_TheyDoNotMeet(ProjectionScene):
         up = up - axis * float(np.dot(up, axis))
         up = up / np.linalg.norm(up)
         note = billboard(self, VGroup(
-            chip("get ONE line to a POINT VIEW", color=AB_COL, size=21),
+            chip("get ONE line to a POINT VIEW", color=AB_COL, size=15),
             chip("the shortest distance is then the PERPENDICULAR to the other",
-                 color=SD_COL, size=21),
-        ).arrange(DOWN, buff=0.2).move_to(mid - up * 1.45))
+                 color=SD_COL, size=15),
+        ).arrange(DOWN, buff=0.12).move_to(mid - up * 1.15))
         narrate(
             self,
             "That is the whole episode in one picture. Get a view in which one of "
@@ -730,8 +739,8 @@ def sheet_pieces():
                  .next_to(P2(fv[k]), fv_dir[k], buff=0.07))
         labs.add(mono(k.lower(), color=col[k], size=15)
                  .next_to(P2(tv[k]), tv_dir[k], buff=0.07))
-    tag_fv = chip("FRONT VIEW", color=SLATE, size=12).move_to(P2(np.array([116.0, 62.0])))
-    tag_tv = chip("TOP VIEW", color=SLATE, size=12).move_to(P2(np.array([116.0, -34.0])))
+    tag_fv = chip("FRONT VIEW", color=SLATE, size=12).move_to(P2(np.array([124.0, 48.0])))
+    tag_tv = chip("TOP VIEW", color=SLATE, size=12).move_to(P2(np.array([124.0, -34.0])))
 
     # the two apparent crossings, and the proof they are not one point
     x_fv = fv["A"] + (fv["B"] - fv["A"]) * G["xf"][0]
@@ -783,7 +792,8 @@ def sheet_pieces():
                              size=13, offset=off, gap=6.0)
                          for k, off in zip(ALL, (5.0, -5.0, 5.0, -5.0))])
     pv = P2(a2["A"])
-    pv_ring = Circle(radius=0.115, color=AB_COL, stroke_width=3).move_to(pv)
+    pv_ring = VGroup(Dot(pv, radius=0.045, color=AB_COL),
+                     Circle(radius=0.115, color=AB_COL, stroke_width=3).move_to(pv))
     pv_lab = mono("a2 b2", color=AB_COL, size=14).next_to(pv_ring, UL, buff=0.05)
     a2_cd = line_of(a2, "C", "D", CD_COL, 3.6)
     a2_labs = VGroup(mono("c2", color=CD_COL, size=14)
@@ -798,9 +808,9 @@ def sheet_pieces():
     cd_dir = (a2["D"] - a2["C"]) / np.linalg.norm(a2["D"] - a2["C"])
     to_m = (m2 - n2) / np.linalg.norm(m2 - n2)
     ra_perp = right_angle(n2, cd_dir, to_m, colour=SD_COL)
-    sd_dim = dim(m2, n2, f"{G['sd']:.1f}  TRUE", SD_COL, size=15, offset=-7.0, gap=6.0)
+    sd_dim = dim(m2, n2, f"{G['sd']:.1f}  TRUE", SD_COL, size=15, offset=-13.0, gap=9.0)
     n2_lab = mono("n2", color=SD_COL, size=14).next_to(P2(n2), DR, buff=0.06)
-    m2_lab = mono("m2", color=SD_COL, size=14).next_to(P2(m2), DL, buff=0.06)
+    m2_lab = mono("m2", color=SD_COL, size=14).next_to(P2(m2), UR, buff=0.05)
     answer = VGroup(perp, ra_perp, n2_lab, m2_lab)
 
     # ---------------- carrying the link back -------------------------------
@@ -814,7 +824,7 @@ def sheet_pieces():
     l1_labs = VGroup(mono("m1", color=SD_COL, size=13).next_to(P2(m1), DL, buff=0.06),
                      mono("n1", color=SD_COL, size=13).next_to(P2(n1p), UR, buff=0.06))
     l1_dim = dim(m1, n1p, f"{G['lens']['aux1']:.1f}", SD_COL, size=12,
-                 offset=-6.0, gap=5.5)
+                 offset=-10.0, gap=7.0)
 
     m_tv, n_tv = G["link"]["tv"]
     back_tv = VGroup(riser(n1p, n_tv, SD_COL, width=1.3, opacity=0.75),
@@ -825,7 +835,7 @@ def sheet_pieces():
     tv_labs = VGroup(mono("m", color=SD_COL, size=13).next_to(P2(m_tv), DL, buff=0.06),
                      mono("n", color=SD_COL, size=13).next_to(P2(n_tv), UR, buff=0.06))
     tv_dim = dim(m_tv, n_tv, f"{G['lens']['tv']:.1f}", SD_COL, size=12,
-                 offset=6.0, gap=5.5)
+                 offset=10.0, gap=7.0)
 
     m_fv, n_fv = G["link"]["fv"]
     back_fv = VGroup(riser(m_tv, m_fv, SD_COL, width=1.3, opacity=0.75),
@@ -836,7 +846,7 @@ def sheet_pieces():
     fv_labs = VGroup(mono("m′", color=SD_COL, size=13).next_to(P2(m_fv), DR, buff=0.06),
                      mono("n′", color=SD_COL, size=13).next_to(P2(n_fv), UL, buff=0.06))
     fv_dim = dim(m_fv, n_fv, f"{G['lens']['fv']:.1f}", SD_COL, size=12,
-                 offset=-6.0, gap=5.5)
+                 offset=-10.0, gap=7.0)
 
     return dict(
         given=given, xy=xy, xy_lab=xy_lab, fv_l=fv_l, tv_l=tv_l, dots=dots, labs=labs,
