@@ -1,6 +1,6 @@
 # Engineering Drawing I — Sheet 4, *Basic Descriptive Geometry II*
 
-Manim CE 0.20.1 source for seven YouTube lessons:
+Manim CE 0.20.1 source for eight YouTube lessons:
 
 * **Episode 06 — Edge View, True Shape and True Size of an Oblique Plane**
   (Exercise 4, Set A, Q.6), about eleven minutes.
@@ -18,6 +18,8 @@ Manim CE 0.20.1 source for seven YouTube lessons:
 * **Episode 12 — Prisms: a Corner With No Edge** (Sheet 8, §9):
   Exercise 7 (Set A) Q.2(b), (c) and (d) — which completes Q.2 — about seven
   minutes.
+* **Episode 13 — Points on the Surface of a Solid** (Sheet 8, §6):
+  Exercise 7 (Set A) Q.1 — which completes the exercise — about nine minutes.
 
 ```
 ed06_true_shape.py      episode 06: five scenes, all the narration, all the geometry
@@ -27,6 +29,7 @@ ed09_skew_lines.py      episode 09: five scenes
 ed10_development.py     episode 10: five scenes  (Sheet 8)
 ed11_cone.py            episode 11: five scenes  (Sheet 8)
 ed12_prisms.py          episode 12: four scenes  (Sheet 8)
+ed13_points.py          episode 13: four scenes  (Sheet 8)
 ed_stage.py             the shared 3-D stage (HP, VP, XY, the four quadrants)
 ed_common.py            thin shim over cfd_common: narration, HUD and camera helpers
 cfd_common.py           the series infrastructure (voice, cache, loudnorm, fonts)
@@ -37,6 +40,7 @@ render_ed09.bat         renders episode 09 in running order at 1080p60
 render_ed10.bat         renders episode 10 in running order at 1080p60
 render_ed11.bat         renders episode 11 in running order at 1080p60
 render_ed12.bat         renders episode 12 in running order at 1080p60
+render_ed13.bat         renders episode 13 in running order at 1080p60
 ```
 
 ---
@@ -51,6 +55,7 @@ render_ed09.bat                              REM all five scenes
 render_ed10.bat                              REM all five scenes
 render_ed11.bat                              REM all five scenes
 render_ed12.bat                              REM all four scenes
+render_ed13.bat                              REM all four scenes
 render_ed08.bat S03                          REM just that one scene
 py -3.11 -m manim -qh ed06_true_shape.py S04_Construction
 py -3.11 -m manim -ql ed07_piercing_point.py S02_CuttingPlane   REM quick look
@@ -81,6 +86,7 @@ py -3.11 ed09_skew_lines.py
 py -3.11 ed10_development.py
 py -3.11 ed11_cone.py
 py -3.11 ed12_prisms.py
+py -3.11 ed13_points.py
 ```
 
 Each prints the worked solution its animation is about to draw. Episode 06:
@@ -258,6 +264,29 @@ shows (c) and (d) as variations rather than as three separate drawings.
 
 Total 7:15.
 
+### Episode 13 — the four scenes
+
+Q.1, which completes Exercise 7 (Set A). Q.1(a) the cylinder and Q.1(d) the
+square pyramid are worked in full, and between them they are the whole
+method; the other three solids of Figure P7.1 — hexagonal prism, cone,
+frustum — are the same two rules again.
+
+The views are read in **first angle**, as the rest of the series is: top view
+below, left-hand side view on the right. In that side view the observer
+stands at −x looking along +x with z up, so screen-right is −y — what is
+further *in front* is drawn further to the *right*. The 45° mitre
+construction and the side view then agree for all six points, which is the
+check that the handedness is right, and `solve()` asserts it.
+
+| Scene | ≈ | What it does |
+|---|---|---|
+| `S01_OnTheSurface` | 2:48 | What "on the surface" buys you: the point is stuck to the solid, so one view fixes it. Two helper lines cover every solid on the sheet — a **generator** where the sides run straight up, a **level section** where the solid tapers. Seen in space on the cylinder and then the pyramid. |
+| `S02_Cylinder` | 2:42 | Q.1(a). Three points, each given in one view and carried into the other two, with the depth going round through the 45° line. The brackets do real work here: a point on the curved surface is *not* fixed by its top view at all, since every generator shows as the same point on that circle whatever its height — what puts point a at 50 is that it is unbracketed, and the rim you see from above is the top one. |
+| `S03_Pyramid` | 2:24 | Q.1(d). On a pyramid the top view fixes a surface point completely, because the level section and the height are locked together. Then the front-view outline, which is not one edge but two slant edges projecting onto the same line — so two candidates, and the brackets choose. |
+| `S04_Recap` | 1:18 | One rule per solid, and what each view hides: the front view what is behind, the top view what is underneath, the left side view what is to the right. |
+
+Total 9:12.
+
 ### Stitching the clips
 
 Each scene renders to its own file under
@@ -312,6 +341,13 @@ ffmpeg -f concat -safe 0 -i list.txt -c copy ed11_cone.mp4
 ```bat
 (echo file 'S01_FoldItOut.mp4' & echo file 'S02_SheetB.mp4' & echo file 'S03_TwoPlanes.mp4' & echo file 'S04_Recap.mp4') > list.txt
 ffmpeg -f concat -safe 0 -i list.txt -c copy ed12_prisms.mp4
+```
+
+**Episode 13**
+
+```bat
+(echo file 'S01_OnTheSurface.mp4' & echo file 'S02_Cylinder.mp4' & echo file 'S03_Pyramid.mp4' & echo file 'S04_Recap.mp4') > list.txt
+ffmpeg -f concat -safe 0 -i list.txt -c copy ed13_points.mp4
 ```
 
 Suggested chapters for the descriptions. The narration is timed from a word
@@ -389,6 +425,15 @@ Episode 12, off the rendered clips (106.9 s, 101.1 s, 129.0 s, 77.1 s):
 01:47  Q.2(b): three edge heights, three straight lines
 03:28  Q.2(c) and (d): a corner where there is no edge
 05:37  Recap, and the number people get wrong
+```
+
+Episode 13, off the rendered clips (167.6 s, 161.9 s, 144.0 s, 78.3 s):
+
+```
+00:00  What "on the surface" gives you: two helper lines
+02:48  Q.1(a): the cylinder, and what the brackets decide
+05:30  Q.1(d): the pyramid, where one view is enough
+07:54  Recap: one rule per solid, and what each view hides
 ```
 
 ---

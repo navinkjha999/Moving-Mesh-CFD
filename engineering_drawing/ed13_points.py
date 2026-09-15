@@ -447,7 +447,7 @@ def point_marks(d, h, colour=PT_COL):
         if hidden:
             dot.move_to(pos)
         lab = mono(tag, color=HIDE_COL if hidden else colour, size=13)
-        lab.next_to(dot, UR, buff=0.05)
+        lab.next_to(dot, d.get("ldir", UR), buff=0.05)
         return VGroup(dot, lab)
 
     x, y, z = d["p"]
@@ -458,10 +458,14 @@ def point_marks(d, h, colour=PT_COL):
     )
 
 
-for key, tags in (("a", ("a′", "a", "a″")), ("b", ("b′", "b", "b″")),
-                  ("c", ("c′", "c", "c″")), ("pa", ("a′", "a", "a″")),
-                  ("pb", ("b′", "b", "b″")), ("pc", ("c′", "c", "c″"))):
+# On the pyramid a and c land within six millimetres of each other in every
+# view, so one label direction for all three points piles them up. Each point
+# gets its own.
+for key, tags, ldir in (("a", ("a′", "a", "a″"), DL), ("b", ("b′", "b", "b″"), UR),
+                        ("c", ("c′", "c", "c″"), UL), ("pa", ("a′", "a", "a″"), DL),
+                        ("pb", ("b′", "b", "b″"), UR), ("pc", ("c′", "c", "c″"), UL)):
     P[key]["tag_fv"], P[key]["tag_tv"], P[key]["tag_sv"] = tags
+    P[key]["ldir"] = ldir
 
 
 # ==========================================================================
