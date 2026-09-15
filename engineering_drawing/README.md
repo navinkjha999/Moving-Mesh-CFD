@@ -144,7 +144,7 @@ that lets the common perpendicular be drawn there at all.
 | `S04_Construction` | 3:50 | Q.6 solved on one sheet. The camera follows the pencil, zooming into whichever view is being drawn, and every transferred dimension physically flies from the view it was measured in to the view it lands in, each corner keeping its own colour. |
 | `S05_Recap` | 1:15 | The two rules against a miniature of the finished sheet, the mirror-image method for the inclination with the VP (44.7° for this plate — Q.7), and the one check that catches the usual mistake. |
 
-Total ≈ 11 minutes.
+Total 11:08.
 
 ### Episode 07 — the six scenes
 
@@ -174,13 +174,13 @@ Total ≈ 8 minutes.
 
 | Scene | ≈ | What it does |
 |---|---|---|
-| `S01_TheyDoNotMeet` | 2:40 | The two lines in space. The camera goes and stands where the front view is taken from — they cross. Step aside and that one crossing point comes apart into two, 41 mm apart in depth. The same again from above: a second crossing, elsewhere, 48 mm apart in height. That is what skew means, watched rather than asserted. Then the common perpendicular against three other links, and the camera moves to the end of AB, where AB is a point and the link lies flat across the view at its full 30.7 mm. |
-| `S02_Strategy` | 1:50 | Why the point view answers it: from there the distance on the paper to any point of CD is the true perpendicular distance from the line AB to that point, so you see all of them at once and the least is the perpendicular. The small drawing beside the words is the real second auxiliary at small scale, not a sketch of one. |
-| `S03_Construction` | 3:20 | The sheet. Both views, with the two crossings marked to show they miss. X1Y1 ∥ ab, the heights carried and flown into place, ab at 106.4 mm true length against 93.9 and 98.6 in the given views. Then X2Y2 ⊥ a₁b₁, the distances carried from two views back, AB closing to a point, and the perpendicular onto c₂d₂: 30.7 mm. |
-| `S04_BackToTheViews` | 2:20 | Where the link actually is. n₂ back along its own projector onto c₁d₁; then the one piece of reasoning — AB is true length in aux 1, so the right angle projects true there, so m₁ is found square to a₁b₁. Back to the top view, up to the front, and the same link then measured in all four: 20.1, 23.7, 21.1 and 30.7. Three of those four are wrong. |
-| `S05_Recap` | 1:20 | The method in four lines and one chain, the number to check yourself against, and §4.11 — the true angle between skew lines — as the companion problem. |
+| `S01_TheyDoNotMeet` | 3:00 | The two lines in space. The camera goes and stands where the front view is taken from — they cross. Step aside and that one crossing point comes apart into two, 41 mm apart in depth. The same again from above: a second crossing, elsewhere, 48 mm apart in height. That is what skew means, watched rather than asserted. Then the common perpendicular against three other links, and the camera moves to the end of AB, where AB is a point and the link lies flat across the view at its full 30.7 mm. |
+| `S02_Strategy` | 1:54 | Why the point view answers it: from there the distance on the paper to any point of CD is the true perpendicular distance from the line AB to that point, so you see all of them at once and the least is the perpendicular. The small drawing beside the words is the real second auxiliary at small scale, not a sketch of one. |
+| `S03_Construction` | 2:50 | The sheet. Both views, with the two crossings marked to show they miss. X1Y1 ∥ ab, the heights carried and flown into place, ab at 106.4 mm true length against 93.9 and 98.6 in the given views. Then X2Y2 ⊥ a₁b₁, the distances carried from two views back, AB closing to a point, and the perpendicular onto c₂d₂: 30.7 mm. |
+| `S04_BackToTheViews` | 2:09 | Where the link actually is. n₂ back along its own projector onto c₁d₁; then the one piece of reasoning — AB is true length in aux 1, so the right angle projects true there, so m₁ is found square to a₁b₁. Back to the top view, up to the front, and the same link then measured in all four: 20.1, 23.7, 21.1 and 30.7. Three of those four are wrong. |
+| `S05_Recap` | 1:15 | The method in four lines and one chain, the number to check yourself against, and §4.11 — the true angle between skew lines — as the companion problem. |
 
-Total ≈ 11 minutes.
+Total 11:08.
 
 ### Stitching the clips
 
@@ -255,14 +255,14 @@ Episode 08, off the rendered clips (137.3 s, 86.9 s, 189.3 s, 77.1 s):
 06:53  Recap, and the three numbers to check yourself against
 ```
 
-Episode 09:
+Episode 09, off the rendered clips (179.7 s, 114.1 s, 169.9 s, 129.3 s, 75.2 s):
 
 ```
 00:00  Two lines that cross twice and never meet
-02:40  Why the point view answers it
-04:30  The sheet: AB true length, AB as a point, 30.7 mm
-07:50  Where the link really is, and what it measures elsewhere
-10:10  Recap, and the true angle between skew lines
+03:00  Why the point view answers it
+04:54  The sheet: AB true length, AB as a point, 30.7 mm
+07:44  Where the link really is, and what it measures elsewhere
+09:53  Recap, and the true angle between skew lines
 ```
 
 ---
