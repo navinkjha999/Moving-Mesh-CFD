@@ -1,0 +1,38 @@
+@echo off
+REM ---------------------------------------------------------------------------
+REM  Engineering Drawing I - Episode 09: Shortest Distance Between Skew Lines
+REM  Renders the five scenes in running order at 1080p60.
+REM
+REM    render_ed09.bat            all five scenes
+REM    render_ed09.bat S03        just the one whose name starts with S03
+REM
+REM  Run it once with EFS_SILENT=1 set if you want to check the timing and the
+REM  layout without waiting on the text-to-speech.
+REM ---------------------------------------------------------------------------
+setlocal
+set FILE=ed09_skew_lines.py
+set FLAGS=-qh
+
+if not "%~1"=="" goto :one
+
+for %%S in (S01_TheyDoNotMeet S02_Strategy S03_Construction S04_BackToTheViews S05_Recap) do (
+    echo.
+    echo === %%S ===
+    py -3.11 -m manim %FLAGS% %FILE% %%S || goto :failed
+)
+echo.
+echo All five scenes rendered. They are under media\videos\ed09_skew_lines\1080p60\.
+goto :eof
+
+:one
+for %%S in (S01_TheyDoNotMeet S02_Strategy S03_Construction S04_BackToTheViews S05_Recap) do (
+    echo %%S | findstr /b /c:"%~1" >nul && (
+        py -3.11 -m manim %FLAGS% %FILE% %%S || goto :failed
+    )
+)
+goto :eof
+
+:failed
+echo.
+echo Render FAILED - see the message above.
+exit /b 1

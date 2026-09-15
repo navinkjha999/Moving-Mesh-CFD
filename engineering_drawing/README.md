@@ -1,6 +1,6 @@
 # Engineering Drawing I — Sheet 4, *Basic Descriptive Geometry II*
 
-Manim CE 0.20.1 source for three YouTube lessons:
+Manim CE 0.20.1 source for four YouTube lessons:
 
 * **Episode 06 — Edge View, True Shape and True Size of an Oblique Plane**
   (Exercise 4, Set A, Q.6), about eleven minutes.
@@ -9,17 +9,21 @@ Manim CE 0.20.1 source for three YouTube lessons:
   thirteen minutes.
 * **Episode 08 — The True Angle Between Two Planes**: the dihedral angle
   (Exercise 4, Set A, Q.12), about eight minutes.
+* **Episode 09 — The Shortest Distance Between Two Skew Lines** (§4.10), and
+  the common perpendicular put back on the given views, about eleven minutes.
 
 ```
 ed06_true_shape.py      episode 06: five scenes, all the narration, all the geometry
 ed07_piercing_point.py  episode 07: six scenes
 ed08_dihedral_angle.py  episode 08: four scenes
+ed09_skew_lines.py      episode 09: five scenes
 ed_stage.py             the shared 3-D stage (HP, VP, XY, the four quadrants)
 ed_common.py            thin shim over cfd_common: narration, HUD and camera helpers
 cfd_common.py           the series infrastructure (voice, cache, loudnorm, fonts)
 render_ed06.bat         renders episode 06 in running order at 1080p60
 render_ed07.bat         renders episode 07 in running order at 1080p60
 render_ed08.bat         renders episode 08 in running order at 1080p60
+render_ed09.bat         renders episode 09 in running order at 1080p60
 ```
 
 ---
@@ -30,6 +34,7 @@ render_ed08.bat         renders episode 08 in running order at 1080p60
 render_ed06.bat                              REM all five scenes, 1080p60
 render_ed07.bat                              REM all six scenes
 render_ed08.bat                              REM all four scenes
+render_ed09.bat                              REM all five scenes
 render_ed08.bat S03                          REM just that one scene
 py -3.11 -m manim -qh ed06_true_shape.py S04_Construction
 py -3.11 -m manim -ql ed07_piercing_point.py S02_CuttingPlane   REM quick look
@@ -56,6 +61,7 @@ so a re-render never re-synthesises a line you have not edited.
 py -3.11 ed06_true_shape.py
 py -3.11 ed07_piercing_point.py
 py -3.11 ed08_dihedral_angle.py
+py -3.11 ed09_skew_lines.py
 ```
 
 Each prints the worked solution its animation is about to draw. Episode 06:
@@ -109,6 +115,23 @@ by θ lays it exactly on the other, and that the angle read at the point view
 equals the one computed from the space coordinates — by two independent routes,
 the perpendicular components about the hinge and the two face normals.
 
+Episode 09:
+
+```
+  the lines cross in the front view at x 81 (41 mm apart in depth)
+  and in the top view at x 24 (48 mm apart in height)  ->  SKEW
+  AB:  front  93.94   top  98.62   TRUE LENGTH 106.42 mm
+  it measures  front 20.09   top 23.65   aux1 21.15
+  SHORTEST DISTANCE  30.71 mm   (true only in aux 2)
+```
+
+Its `solve()` asserts that the lines really are skew — non-parallel, and a
+clear gap at each of the two apparent crossings — that the link it draws is
+perpendicular to both of them, that no sampled link anywhere on the two
+segments is shorter, that the second auxiliary reduces AB to a point, and that
+the right angle at M projects true in the first auxiliary, which is the step
+that lets the common perpendicular be drawn there at all.
+
 ---
 
 ### Episode 06 — the five scenes
@@ -147,6 +170,18 @@ Total ≈ 12–13 minutes.
 
 Total ≈ 8 minutes.
 
+### Episode 09 — the five scenes
+
+| Scene | ≈ | What it does |
+|---|---|---|
+| `S01_TheyDoNotMeet` | 2:40 | The two lines in space. The camera goes and stands where the front view is taken from — they cross. Step aside and that one crossing point comes apart into two, 41 mm apart in depth. The same again from above: a second crossing, elsewhere, 48 mm apart in height. That is what skew means, watched rather than asserted. Then the common perpendicular against three other links, and the camera moves to the end of AB, where AB is a point and the link lies flat across the view at its full 30.7 mm. |
+| `S02_Strategy` | 1:50 | Why the point view answers it: from there the distance on the paper to any point of CD is the true perpendicular distance from the line AB to that point, so you see all of them at once and the least is the perpendicular. The small drawing beside the words is the real second auxiliary at small scale, not a sketch of one. |
+| `S03_Construction` | 3:20 | The sheet. Both views, with the two crossings marked to show they miss. X1Y1 ∥ ab, the heights carried and flown into place, ab at 106.4 mm true length against 93.9 and 98.6 in the given views. Then X2Y2 ⊥ a₁b₁, the distances carried from two views back, AB closing to a point, and the perpendicular onto c₂d₂: 30.7 mm. |
+| `S04_BackToTheViews` | 2:20 | Where the link actually is. n₂ back along its own projector onto c₁d₁; then the one piece of reasoning — AB is true length in aux 1, so the right angle projects true there, so m₁ is found square to a₁b₁. Back to the top view, up to the front, and the same link then measured in all four: 20.1, 23.6, 21.2 and 30.7. Three of those four are wrong. |
+| `S05_Recap` | 1:20 | The method in four lines and one chain, the number to check yourself against, and §4.11 — the true angle between skew lines — as the companion problem. |
+
+Total ≈ 11 minutes.
+
 ### Stitching the clips
 
 Each scene renders to its own file under
@@ -173,6 +208,13 @@ ffmpeg -f concat -safe 0 -i list.txt -c copy ed07_piercing_point.mp4
 ```bat
 (echo file 'S01_Dihedral.mp4' & echo file 'S02_Strategy.mp4' & echo file 'S03_Construction.mp4' & echo file 'S04_Recap.mp4') > list.txt
 ffmpeg -f concat -safe 0 -i list.txt -c copy ed08_dihedral_angle.mp4
+```
+
+**Episode 09**
+
+```bat
+(echo file 'S01_TheyDoNotMeet.mp4' & echo file 'S02_Strategy.mp4' & echo file 'S03_Construction.mp4' & echo file 'S04_BackToTheViews.mp4' & echo file 'S05_Recap.mp4') > list.txt
+ffmpeg -f concat -safe 0 -i list.txt -c copy ed09_skew_lines.mp4
 ```
 
 Suggested chapters for the descriptions. The narration is timed from a word
@@ -213,19 +255,30 @@ Episode 08, off the rendered clips (137.3 s, 86.9 s, 189.3 s, 77.1 s):
 06:53  Recap, and the three numbers to check yourself against
 ```
 
+Episode 09:
+
+```
+00:00  Two lines that cross twice and never meet
+02:40  Why the point view answers it
+04:30  The sheet: AB true length, AB as a point, 30.7 mm
+07:50  Where the link really is, and what it measures elsewhere
+10:10  Recap, and the true angle between skew lines
+```
+
 ---
 
-### Conventions the three episodes keep
+### Conventions the four episodes keep
 
 * **Colour is meaning, and it never changes mid-episode.** Coral is the vertical
   plane and the front view, teal the horizontal plane and the top view, cream the
   construction lines that only exist to get you there. What gold marks is
   whatever the episode is chasing: in 06 the plate and its answers, in 07 the
-  line DE, in 08 the hinge BC. Within an episode every object keeps one colour
+  line DE, in 08 the hinge BC, in 09 the line AB that goes to a point
+  view — with the answer itself, the common perpendicular, in coral. Within an episode every object keeps one colour
   through every view — in 06 the corners (A coral, B teal, C violet), in 07 the
   plate violet against the gold line, in 08 the two faces (ABC violet, DBC
-  coral) — so one thing can be followed by eye from the given views all the way
-  into the last auxiliary.
+  coral), in 09 the two lines (AB gold, CD violet) — so one thing can be
+  followed by eye from the given views all the way into the last auxiliary.
 * **One figure throughout.** The solid that tilts in space in the opening scenes
   is built from the same given dimensions as the sheet solved later, only at a
   different scale. The 3-D picture and the drawing are the same problem, not an
