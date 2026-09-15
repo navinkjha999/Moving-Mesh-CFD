@@ -539,10 +539,15 @@ class S01_TheyDoNotMeet(ProjectionScene):
         up = np.array([0.0, 0.0, 1.0])
         up = up - axis * float(np.dot(up, axis))
         up = up / np.linalg.norm(up)
+        # Plain text, not chip(): a chip carries a rectangle filled 82% navy,
+        # and the 3-D camera depth-sorts a billboard's own children, so that
+        # box gets painted OVER the words it is supposed to sit behind and
+        # leaves them at a fifth of their colour. Everything else billboarded
+        # in this scene is bare text, and bare text comes out right.
         note = billboard(self, VGroup(
-            chip("get ONE line to a POINT VIEW", color=AB_COL, size=30),
-            chip("the answer is the PERPENDICULAR from it", color=SD_COL, size=30),
-        ).arrange(DOWN, buff=0.1).move_to(mid - up * 1.15))
+            mono("get ONE line to a POINT VIEW", color=AB_COL, size=30),
+            mono("the answer is the PERPENDICULAR from it", color=SD_COL, size=30),
+        ).arrange(DOWN, buff=0.16).move_to(mid - up * 1.15))
         narrate(
             self,
             "That is the whole episode in one picture. Get a view in which one of "
