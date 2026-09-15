@@ -775,7 +775,7 @@ class S03_TwoPlanes(MovingCameraScene):
                  color=CUT_COL, size=17),
             chip("one point per EDGE, plus one wherever the planes meet a face",
                  color=DEV_COL, size=17),
-        ).arrange(DOWN, buff=0.16)), corner=DOWN, buff=0.4)
+        ).arrange(DOWN, buff=0.16)), corner=DOWN + RIGHT, buff=0.38)
         self.add_foreground_mobjects(note)
         narrate(
             self,
