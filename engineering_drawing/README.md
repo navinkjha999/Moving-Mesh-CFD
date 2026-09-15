@@ -231,10 +231,10 @@ horizontal face always is, and a half-ellipse that needs an auxiliary.
 | `S01_TheCone` | 1:42 | The cone, its twelve generators, the slant height 54.23, and the two planes. The waste lifts off and leaves the two section faces meeting on one diameter. |
 | `S02_TrueLength` | 2:08 | The whole difficulty in one scene. Generators 7 and 4 are the same length in space; from the front view 7 measures 27.12 and 4 measures 25.00. The fix — swing the point about the axis until it lands on the outline, where its height and its distance from the apex are both unchanged — is watched in space before it is ever drawn. |
 | `S03_Sheet` | 1:44 | The orthographic drawing, the twelve cut points, and the twelve true lengths lifted off by rotation. There are only four different answers: the seven level-cut generators all give 27.12, and symmetry pairs the rest. |
-| `S04_Development` | 1:55 | The sector: radius 54.23, angle 360 R/L = 139.40°, twelve divisions of 11.6170°, and each true length stepped off from the apex. The inner curve runs as an arc at both ends — equal distances from the apex is an arc, not a straight line. |
+| `S04_Development` | 2:03 | The sector: radius 54.23, angle 360 R/L = 139.40°, twelve divisions of 11.6170°, and each true length stepped off from the apex. The inner curve runs as an arc at both ends — equal distances from the apex is an arc, not a straight line. |
 | `S05_Recap` | 1:34 | The method, the two traps, and the pyramid: the same problem, since a cone is only a pyramid with a great many very thin faces. |
 
-Total 9:04.
+Total 9:11.
 
 ### Stitching the clips
 
@@ -343,14 +343,14 @@ Episode 10, off the rendered clips (85.7 s, 125.4 s, 151.5 s, 120.8 s, 68.8 s):
 08:04  Recap, and the two traps
 ```
 
-Episode 11, off the rendered clips (102.0 s, 128.0 s, 104.1 s, 115.3 s, 94.3 s):
+Episode 11, off the rendered clips (102.0 s, 128.0 s, 104.1 s, 123.0 s, 94.3 s):
 
 ```
 00:00  The cone, and the two planes that cut it
 01:42  Why a generator lies, and how to make it talk
 03:50  The sheet: twelve cut points, four true lengths
 05:34  The development: a sector of 139.40°
-07:30  Recap, the traps, and the pyramid
+07:37  Recap, the traps, and the pyramid
 ```
 
 ---
