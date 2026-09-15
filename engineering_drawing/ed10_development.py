@@ -751,7 +751,7 @@ class S03_TrueShape(MovingCameraScene):
         major = dim(aux_point(-RAD, CUT_AT, 0), aux_point(G["x_top"], HEIGHT, 0),
                     f"{G['slant']:.1f}", CUT_COL, size=13, offset=26.0, gap=6.0)
         minor = dim(aux_point(0, plane_z(0), -RAD), aux_point(0, plane_z(0), RAD),
-                    f"{DIA:.0f}", CUT_COL, size=13, offset=-30.0, gap=6.0)
+                    f"{DIA:.0f}", CUT_COL, size=13, offset=-13.0, gap=6.0)
         aux = VGroup(x1, x1_lab, ra, aux_risers, aux_pts, shape)
 
         sheet = VGroup(given, dims, marks, numbers, spokes, chord, risers,
