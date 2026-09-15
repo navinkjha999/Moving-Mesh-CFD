@@ -313,7 +313,7 @@ class S01_WhatIsOblique(ThreeDScene):
 
         right_tl = float(np.linalg.norm(right_apex - g["base"][0]))
         tag = billboard(self, mono(f"all four {right_tl:.2f}", color=TL_COL, size=24)
-                        .move_to(pt3((-4, -44, 0), h)))
+                        .move_to(pt3((-4, -44, 14), h)))
         narrate(
             self,
             "A square pyramid, thirty-five on the side of its base. Its apex is "
@@ -348,10 +348,11 @@ class S01_WhatIsOblique(ThreeDScene):
         # each one placed where the projection actually puts it, not where the
         # plan says it should be: edge 4 sits at the BACK of the base, which
         # projects straight onto the solid unless it is pushed well past it
-        lens_at = [(-52.0, 0.0), (-4.0, -48.0), (44.0, 0.0), (-4.0, 66.0)]
+        lens_at = [(-52.0, 0.0, 12.0), (-4.0, -48.0, 20.0),
+                   (44.0, 0.0, 12.0), (-4.0, 80.0, -10.0)]
         lens = VGroup(*[
             billboard(self, mono(f"{e['tl']:.2f}", color=TL_COL, size=20)
-                      .move_to(pt3((lens_at[k][0], lens_at[k][1], -4), h)))
+                      .move_to(pt3(lens_at[k], h)))
             for k, e in enumerate(g["edges"])])
         narrate(
             self,
@@ -728,7 +729,7 @@ class S03_SheetB(MovingCameraScene):
         dev_tag = VGroup(
             caption("TRUE SHAPE", color=CUT_COL, size=16),
             mono(f"{u_max:.2f} long x {2 * abs(ts[1][1]):.2f} wide", color=TL_COL, size=13),
-        ).arrange(DOWN, buff=0.10).move_to(P2(46, 84))
+        ).arrange(DOWN, buff=0.10).move_to(P2(50, 70))
         aux = VGroup(refline, ref_tag, projectors, ts_poly, ts_dots, ts_tags,
                      w_dim, l_dim, dev_tag)
 
@@ -964,7 +965,7 @@ class S04_DevelopmentB(MovingCameraScene):
         narrate(
             self,
             f"Edge one is {E[0]['tl']:.2f} long, edge two and edge four "
-            f"{E[1]['tl']:.2f}, and edge three, the short one under the apex, only "
+            f"{E[1]['tl']:.2f}, and edge three, the one the apex leans towards, only "
             f"{E[2]['tl']:.2f}. Start the pattern on that shortest edge - the seam "
             "is least work where the joint is least long.",
             look_at(self, [development, tl_diag], right=0.26),
@@ -1065,13 +1066,16 @@ def cone_views():
                             color=SOLID_COL, stroke_width=1.5, stroke_opacity=0.75)
                        for gg in c["gens"]])
     tv_out = VGroup(circle, tv_gens, Dot(tv(ap[0], ap[1]), radius=0.042, color=SOLID_COL))
-    # generator 7's rim point is on the line to the apex plan, so its number
-    # radially out lands on the apex dot itself - that one goes off the axis
+    # generator 7's rim point lies on the line to the apex plan: radially out,
+    # its number lands on the apex dot; anywhere nearer, on generator 8's
+    # number or inside the outline. It goes out on a leader instead.
     nums = VGroup(*[
         mono(str(gg["k"]), color=SLATE, size=11).move_to(
-            tv(23.0, -9.0) if gg["k"] == 7
+            tv(33.0, -12.0) if gg["k"] == 7
             else tv(gg["v"][0] * 1.30, gg["v"][1] * 1.30))
         for gg in c["gens"]])
+    nums.add(Line(tv(22.5, -1.0), tv(31.0, -10.5), color=SLATE,
+                  stroke_width=1.0, stroke_opacity=0.7))
     return fv_out, fv_gens, tv_out, nums
 
 
