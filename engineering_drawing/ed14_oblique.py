@@ -74,7 +74,8 @@ DEV_COL = VIOLET
 AUX_COL = CREAM
 
 MM = 0.026
-S3 = 0.062               # the solids are small against a wide frame
+S3 = 0.095               # the solid has a wide frame to fill
+PYR_CX = 5.0             # mid-way between the base centre and the leaning apex
 
 # ==========================================================================
 #  Figure P8.3(b): an oblique square pyramid. Base 35 side, set with its
@@ -265,8 +266,11 @@ true_shape(CN, CONE["tilt"])
 #  The 3-D stage
 # ==========================================================================
 def pt3(p, h):
+    """Sheet millimetres -> scene units, centred on the solid rather than on the
+    base: with the apex ten past one corner, centring on the base centre alone
+    parks the whole pyramid in the right-hand half of the frame."""
     x, y, z = p
-    return np.array([x * S3, y * S3, (z - h / 2.0) * S3])
+    return np.array([(x - PYR_CX) * S3, y * S3, (z - h / 2.0) * S3])
 
 
 def pyramid_3d(apex=None, fill=0.28, h=None):
@@ -282,39 +286,16 @@ def pyramid_3d(apex=None, fill=0.28, h=None):
     return faces
 
 
-def cone_3d(fill=0.26, segments=72):
-    c = CN
-    h = c["apex"][2]
-    g = VGroup()
-    for i in range(segments):
-        a0 = 2 * math.pi * i / segments
-        a1 = 2 * math.pi * (i + 1) / segments
-        v0 = np.array([c["R"] * math.cos(a0), c["R"] * math.sin(a0), 0.0])
-        v1 = np.array([c["R"] * math.cos(a1), c["R"] * math.sin(a1), 0.0])
-        g.add(Polygon(pt3(v0, h), pt3(v1, h), pt3(c["apex"], h),
-                      stroke_width=0, fill_color=SOLID_COL, fill_opacity=fill))
-    return g
-
-
-def cone_base_3d(colour=SOLID_COL, width=3.5, samples=96):
-    c = CN
-    h = c["apex"][2]
-    pts = [pt3((c["R"] * math.cos(2 * math.pi * i / samples),
-                c["R"] * math.sin(2 * math.pi * i / samples), 0.0), h)
-           for i in range(samples + 1)]
-    line = VMobject(stroke_color=colour, stroke_width=width)
-    line.set_points_as_corners(pts)
-    return line
-
-
 # ==========================================================================
 #  S01 - right against oblique
 # ==========================================================================
 class S01_WhatIsOblique(ThreeDScene):
     def construct(self):
         self.camera.background_color = NAVY
-        self.set_camera_orientation(phi=70 * DEGREES, theta=-56 * DEGREES,
-                                    zoom=1.15, focal_distance=60.0)
+        # nearly front-on (theta close to -90) so the LEAN reads as a lean, and a
+        # long focal distance so the near corner is not thrown forward into a wedge
+        self.set_camera_orientation(phi=72 * DEGREES, theta=-74 * DEGREES,
+                                    zoom=1.0, focal_distance=150.0)
         bar = hud(self, title_bar("Oblique Solids",
                                   "Sheet 8 · §10 · when the apex leans over"))
         self.add(bar)
@@ -330,7 +311,7 @@ class S01_WhatIsOblique(ThreeDScene):
 
         right_tl = float(np.linalg.norm(right_apex - g["base"][0]))
         tag = billboard(self, mono(f"all four {right_tl:.2f}", color=TL_COL, size=24)
-                        .move_to(pt3((-6, -52, -14), h)))
+                        .move_to(pt3((0, -46, -20), h)))
         narrate(
             self,
             "A square pyramid, thirty-five on the side of its base. Its apex is "
@@ -360,10 +341,13 @@ class S01_WhatIsOblique(ThreeDScene):
         )
 
         # out beyond each corner and below the base, or they land on the solid
+        # out past each corner and well below the base - anything closer is
+        # projected straight back onto the solid
+        lens_at = [(-48.0, 0.0), (0.0, -46.0), (46.0, 0.0), (0.0, 46.0)]
         lens = VGroup(*[
             billboard(self, mono(f"{e['tl']:.2f}", color=TL_COL, size=20)
-                      .move_to(pt3((e["v"][0] * 1.7 - 6, e["v"][1] * 1.7, -9), h)))
-            for e in g["edges"]])
+                      .move_to(pt3((lens_at[k][0], lens_at[k][1], -20), h)))
+            for k, e in enumerate(g["edges"])])
         narrate(
             self,
             f"And now look at the four edges. {g['edges'][0]['tl']:.2f}. "
@@ -433,6 +417,27 @@ def tv(x, y):
 def tl_point(plan, height):
     """A point of the true-length diagram: plan length out, height up."""
     return P2(TL_X + plan, height)
+
+
+def foot_groups(plans):
+    """Distinct feet of the true-length diagram, longest first.
+
+    On an oblique solid several edges usually share a plan length - here 2 and
+    4 do - so their feet land on top of each other. Printing "2" and "4" at the
+    same point gives an unreadable blot; one label per distinct foot is what a
+    draughtsman writes anyway.
+    """
+    groups = {}
+    for k, pl in enumerate(plans):
+        groups.setdefault(round(pl, 6), []).append(k + 1)
+    return sorted(groups.items(), key=lambda kv: -kv[0])
+
+
+def foot_labels(plans, size=11, colour=SLATE, drop=6.0):
+    return VGroup(*[
+        mono("·".join(str(i) for i in ks), color=colour, size=size)
+        .move_to(tl_point(pl, -drop))
+        for pl, ks in foot_groups(plans)])
 
 
 def dev_pt(p, at=None):
@@ -516,12 +521,15 @@ class S02_Triangulation(MovingCameraScene):
         hyp = VGroup(*[Line(tl_point(0, g["height"]), tl_point(p, 0),
                             color=TL_COL, stroke_width=2.8) for p in plans])
         feet = VGroup(*[Dot(tl_point(p, 0), radius=0.032, color=TL_COL) for p in plans])
-        foot_nums = VGroup(*[mono(str(k + 1), color=SLATE, size=11)
-                             .move_to(tl_point(p, -6)) for k, p in enumerate(plans)])
-        tl_tags = VGroup(*[
-            mono(f"{e['tl']:.2f}", color=TL_COL, size=12).move_to(
-                tl_point(plans[k] * 0.52 + 5, g["height"] * 0.52 + 5))
-            for k, e in enumerate(g["edges"]) if k in (0, 2)])
+        foot_nums = foot_labels(plans)
+        # the hypotenuses converge on the apex, so there is no room BETWEEN
+        # them for a five-figure number: the lengths go in a legend instead
+        tl_tags = VGroup(
+            mono("TRUE LENGTHS", color=SLATE, size=12),
+            *[mono(f"{'·'.join(str(i) for i in ks):<4} {g['edges'][ks[0] - 1]['tl']:6.2f}",
+                   color=TL_COL, size=14) for _, ks in foot_groups(plans)],
+        ).arrange(DOWN, buff=0.11, aligned_edge=LEFT)
+        tl_tags.move_to(tl_point(max(plans) + 16, 48), aligned_edge=LEFT + UP)
         h_dim = dim(tl_point(0, 0), tl_point(0, g["height"]), f"{g['height']:.0f}",
                     SLATE, offset=7.0)
         diagram = VGroup(axis, upright, hyp, feet, foot_nums)
@@ -622,14 +630,16 @@ class S03_SheetB(MovingCameraScene):
         drop = DashedLine(fv(apex[0], apex[2]), fv(apex[0], -4), color=MUTED,
                           stroke_width=1.2, dash_length=0.05)
         h_dim = dim(fv(apex[0], 0), fv(apex[0], apex[2]), "50", SLATE, offset=-7.0)
-        off_dim = dim(fv(g["half"], -6), fv(apex[0], -6), "10", SLATE, gap=-4.5)
+        off_dim = dim(fv(g["half"], -6), fv(apex[0], -6), "10", SLATE, gap=4.5)
         side_dim = dim(tv(g["base"][0][0], g["base"][0][1]),
                        tv(g["base"][1][0], g["base"][1][1]), "35", SLATE,
                        offset=-6.0, gap=4.5)
+        # corners 2 and 4 have clear air straight out from the centre; 1 and 3
+        # sit on the y = 0 line, where the apex rays are, so they go off it
+        tag_at = {0: (-33.0, 0.0), 1: (0.0, -33.0), 2: (24.75, 10.0), 3: (0.0, 33.0)}
         corner_tags = VGroup(*[
-            mono(str(k + 1), color=SOLID_COL, size=13).move_to(
-                tv(v[0] * 1.32, v[1] * 1.32))
-            for k, v in enumerate(g["base"])])
+            mono(str(k + 1), color=SOLID_COL, size=13).move_to(tv(*tag_at[k]))
+            for k in range(4)])
         apex_tag = VGroup(mono("o′", color=SOLID_COL, size=14).move_to(fv(apex[0] + 5, apex[2] + 3)),
                           mono("o", color=SOLID_COL, size=14).move_to(tv(apex[0] + 5, 4)))
         givens = VGroup(drop, h_dim, off_dim, side_dim, corner_tags, apex_tag)
@@ -669,9 +679,9 @@ class S03_SheetB(MovingCameraScene):
         tv_dots = VGroup(*[Dot(tv(e["cut"][0], e["cut"][1]), radius=0.038, color=CUT_COL)
                            for e in E])
         tv_tags = VGroup(
-            mono("1", color=CUT_COL, size=12).move_to(tv(E[0]["cut"][0] - 6, 0)),
+            mono("1", color=CUT_COL, size=12).move_to(tv(E[0]["cut"][0] - 3, -8)),
             mono("2", color=CUT_COL, size=12).move_to(tv(E[1]["cut"][0] + 2, E[1]["cut"][1] - 6)),
-            mono("3", color=CUT_COL, size=12).move_to(tv(E[2]["cut"][0] + 6, 0)),
+            mono("3", color=CUT_COL, size=12).move_to(tv(E[2]["cut"][0], -9)),
             mono("4", color=CUT_COL, size=12).move_to(tv(E[3]["cut"][0] + 2, E[3]["cut"][1] + 6)),
         )
 
@@ -681,7 +691,7 @@ class S03_SheetB(MovingCameraScene):
         u_max = max(q[0] for q in ts)
         refline = Line(aux_pt(-8, 0, base_xz), aux_pt(u_max + 8, 0, base_xz),
                        color=MUTED, stroke_width=1.4, stroke_opacity=0.7)
-        ref_tag = mono("X₁Y₁", color=MUTED, size=12).move_to(aux_pt(-17, 0, base_xz))
+        ref_tag = mono("X₁Y₁", color=MUTED, size=12).move_to(aux_pt(-25, 0, base_xz))
         def _reach(u):
             """How far out the projector has to run: 2 and 4 share one line."""
             return max(q[1] for q in ts if abs(q[0] - u) < 1e-6) + 6.0
@@ -696,10 +706,10 @@ class S03_SheetB(MovingCameraScene):
                           fill_color=CUT_COL, fill_opacity=0.16)
         ts_dots = VGroup(*[Dot(aux_pt(q[0], q[1], base_xz), radius=0.036, color=CUT_COL)
                            for q in ts])
+        ts_off = {0: (-5.0, -8.0), 1: (0.0, -7.0), 2: (8.0, 3.0), 3: (0.0, 7.0)}
         ts_tags = VGroup(*[
             mono(f"{k + 1}₁", color=CUT_COL, size=12).move_to(
-                aux_pt(q[0] + (-7 if k == 0 else 7 if k == 2 else 0),
-                       q[1] + (0 if k in (0, 2) else (-7 if k == 1 else 7)), base_xz))
+                aux_pt(q[0] + ts_off[k][0], q[1] + ts_off[k][1], base_xz))
             for k, q in enumerate(ts)])
         W_AT = u_max + 14.0
         w_dim = VGroup(
@@ -710,9 +720,10 @@ class S03_SheetB(MovingCameraScene):
                 f"{2 * abs(ts[1][1]):.2f}", TL_COL, offset=0.0, gap=-6.5, size=12),
         )
         l_dim = dim(aux_pt(0, 0, base_xz), aux_pt(u_max, 0, base_xz),
-                    f"{u_max:.2f}", TL_COL, offset=-9.0, gap=5.0, size=12)
-        dev_tag = caption("TRUE SHAPE", color=CUT_COL, size=16).move_to(
-            aux_pt(u_max * 0.5, 26.0, base_xz))
+                    f"{u_max:.2f}", TL_COL, offset=-18.0, gap=6.0, size=12)
+        # the caption runs across the sheet, not along the cut, so it has to
+        # clear the HIGHEST corner of the kite, not just its centre line
+        dev_tag = caption("TRUE SHAPE", color=CUT_COL, size=16).move_to(P2(-14, 86))
         aux = VGroup(refline, ref_tag, projectors, ts_poly, ts_dots, ts_tags,
                      w_dim, l_dim, dev_tag)
 
@@ -847,8 +858,7 @@ class S04_DevelopmentB(MovingCameraScene):
         hyp = VGroup(*[Line(tl_apex, tl_point(p, 0), color=TL_COL, stroke_width=2.6)
                        for p in plans])
         feet = VGroup(*[Dot(tl_point(p, 0), radius=0.030, color=TL_COL) for p in plans])
-        foot_nums = VGroup(*[mono(str(k + 1), color=SLATE, size=11).move_to(tl_point(p, -6))
-                             for k, p in enumerate(plans)])
+        foot_nums = foot_labels(plans)
         tl_diag = VGroup(axis, upright, hyp, feet, foot_nums)
         tl_tag = caption("TRUE LENGTHS", color=TL_COL, size=15).move_to(tl_point(30, H + 14))
 
@@ -871,7 +881,7 @@ class S04_DevelopmentB(MovingCameraScene):
             mono(f"edges 2,4  {E[1]['from_apex']:.2f}", color=CUT_COL, size=13),
             mono(f"edge 3     {E[2]['from_apex']:.2f}", color=CUT_COL, size=13),
         ).arrange(DOWN, buff=0.09, aligned_edge=LEFT)
-        hyp_tags.move_to(P2(50, 82), aligned_edge=LEFT + UP)
+        hyp_tags.move_to(P2(-26, 78), aligned_edge=LEFT + UP)
 
         # ---- the development -------------------------------------------------
         O = dev_pt((0.0, 0.0))
@@ -910,7 +920,7 @@ class S04_DevelopmentB(MovingCameraScene):
         pattern = Polygon(*([dev_pt(q) for q in dev] + [dev_pt(q) for q in dcut[::-1]]),
                           stroke_width=0, fill_color=DEV_COL, fill_opacity=0.16)
         dev_tag = caption("DEVELOPMENT", color=DEV_COL, size=17).move_to(
-            dev_pt((0.0, -88.0)))
+            dev_pt((0.0, -102.0)))
         development = VGroup(pattern, base_poly, rays, seam, cut_line, dev_dots,
                              cut_rays, dev_nums, o_tag, dev_tag)
 
@@ -981,7 +991,7 @@ class S04_DevelopmentB(MovingCameraScene):
             "Now the cut. A cut point is NOT at the height you see in the front view - "
             "it is at its own true distance from the apex, measured along its own "
             "edge. And the true-length diagram will give you that too, for free.",
-            look_at(self, [views, tl_diag], right=0.26),
+            look_at(self, [views, tl_diag, hyp_tags], right=0.26),
             rail_focus(rail, rungs, 2), lag_ratio=0.2,
         )
         narrate(
@@ -1068,16 +1078,26 @@ class S05_ConeAndRecap(MovingCameraScene):
 
         axis_line = DashedLine(fv(0, 0), fv(ap[0], ap[2]), color=MUTED,
                                stroke_width=1.6, dash_length=0.06)
-        axis_dim = dim(fv(0, 0), fv(ap[0], ap[2]), "60", SLATE, offset=-7.0, size=12)
+        axis_dim = dim(fv(0, 0), fv(ap[0], ap[2]), "60", SLATE, offset=11.0, size=12)
         lean = Arc(radius=0.34, start_angle=0, angle=math.radians(CONE["lean"]),
                    arc_center=fv(0, 0), color=SLATE, stroke_width=1.6)
-        lean_tag = mono("60°", color=SLATE, size=12).move_to(fv(16, 6))
-        dia_dim = dim(tv(-R, 0), tv(R, 0), "Ø42", SLATE, offset=0.0, gap=-6.0, size=12)
-        givens = VGroup(axis_line, axis_dim, lean, lean_tag, dia_dim)
+        lean_tag = mono("60°", color=SLATE, size=12).move_to(fv(17, 5))
+        # twelve generators converge on the apex plan, so the inside of the
+        # circle is no place for a label: the arrow stays on the diameter and
+        # the figure goes out to the left, where nothing runs
+        dia_dim = VGroup(
+            DoubleArrow(tv(-R, 0), tv(R, 0), buff=0, color=SLATE, stroke_width=1.6,
+                        tip_length=0.09),
+            mono("Ø42", color=SLATE, size=12).move_to(tv(-R - 17, 0)),
+        )
+        # the axis dimensions have done their work once the generators arrive -
+        # leaving them on turns the front view into a thicket
+        given_dims = VGroup(axis_dim, lean, lean_tag)
+        givens = VGroup(axis_line, given_dims, dia_dim)
 
         # ---- the cut ---------------------------------------------------------
         mid = c["mid"]
-        along = dim(fv(0, 0), fv(mid[0], mid[2]), "30", CUT_COL, offset=7.0, size=12)
+        along = dim(fv(0, 0), fv(mid[0], mid[2]), "30", CUT_COL, offset=11.0, size=12)
         m = math.tan(math.radians(CONE["tilt"]))
         cut_fv = Line(fv(G[0]["cut"][0], G[0]["cut"][2]),
                       fv(G[6]["cut"][0], G[6]["cut"][2]),
@@ -1128,7 +1148,7 @@ class S05_ConeAndRecap(MovingCameraScene):
             *[mono(f"gen {G[k]['k']:<2}  {G[k]['tl']:6.2f}   {G[k]['from_apex']:6.2f}",
                    color=CUT_COL, size=12) for k in (0, 3, 6)],
         ).arrange(DOWN, buff=0.09, aligned_edge=LEFT)
-        table.move_to(P2(48, 86), aligned_edge=LEFT + UP)
+        table.move_to(P2(-30, 84), aligned_edge=LEFT + UP)
 
         # ---- the development -------------------------------------------------
         O = dev_pt((0.0, 0.0))
@@ -1144,7 +1164,7 @@ class S05_ConeAndRecap(MovingCameraScene):
         o_tag = mono("O", color=DEV_COL, size=15).move_to(dev_pt((0.0, 6.0)))
         pattern = Polygon(*([dev_pt(q) for q in dev] + [dev_pt(q) for q in dcut[::-1]]),
                           stroke_width=0, fill_color=DEV_COL, fill_opacity=0.15)
-        dev_tag = caption("DEVELOPMENT", color=DEV_COL, size=17).move_to(dev_pt((0.0, -86.0)))
+        dev_tag = caption("DEVELOPMENT", color=DEV_COL, size=17).move_to(dev_pt((0.0, -98.0)))
         development = VGroup(pattern, base_curve, rays, seam, cut_curve, cut_dots2,
                              dev_nums, o_tag, dev_tag)
 
@@ -1174,7 +1194,7 @@ class S05_ConeAndRecap(MovingCameraScene):
             "twelve and draw a generator to the apex from each division. Twelve narrow "
             "triangles standing in for the curved surface - and the more you use, the "
             "closer the pattern gets.",
-            Create(fv_gens), FadeIn(nums),
+            Create(fv_gens), FadeIn(nums), FadeOut(given_dims),
             lag_ratio=0.15,
         )
         narrate(
@@ -1211,6 +1231,7 @@ class S05_ConeAndRecap(MovingCameraScene):
             "fifty-one point nine six, up the side. Step the twelve plan lengths out "
             "along the bottom - they come in pairs too, so there are seven different "
             "feet. Join, and the hypotenuses are the twelve true generators.",
+            look_at(self, [views, tl_diag, table], right=0.26),
             Create(tl_diag), FadeIn(tl_tag),
             lag_ratio=0.18,
         )
