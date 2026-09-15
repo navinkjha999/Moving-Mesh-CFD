@@ -167,10 +167,13 @@ def solve(gaps=GAPS):
         "aux 1 does not show AB at true length"
 
     # ---- aux 2: X2Y2 PERPENDICULAR to a1b1 -> AB becomes a point ----------
-    u2 = -(aux1["B"] - aux1["A"])
+    # beyond B, not beyond A: either is geometrically fine - you are just
+    # sighting along AB from one end or the other - but this way the chain of
+    # views runs down the page instead of doubling back beside the given ones
+    u2 = aux1["B"] - aux1["A"]
     u2 = u2 / np.linalg.norm(u2)
     w2 = np.array([-u2[1], u2[0]])
-    q0 = aux1["A"] + u2 * gaps[1]
+    q0 = aux1["B"] + u2 * gaps[1]
     steps = {k: -float(np.dot(tv[k] - p0, n1)) for k in P}
     assert min(steps.values()) > 2.0, "X1Y1 runs through the top view"
     aux2 = _project(aux1, q0, w2, u2, steps)
@@ -717,14 +720,18 @@ def sheet_pieces():
     fv_l, tv_l = both_lines(fv), both_lines(tv)
     dots = VGroup(*[Dot(P2(fv[k]), radius=0.036, color=col[k]) for k in ALL],
                   *[Dot(P2(tv[k]), radius=0.036, color=col[k]) for k in ALL])
+    # outward() sends both of A's labels towards XY, where they land on each
+    # other and on the line, so the given views get their directions by hand
+    fv_dir = {"A": UL, "B": UR, "C": UL, "D": DR}
+    tv_dir = {"A": DL, "B": DR, "C": DL, "D": UR}
     labs = VGroup()
     for k in ALL:
         labs.add(mono(f"{k.lower()}′", color=col[k], size=15)
-                 .next_to(P2(fv[k]), outward(fv[k], fv), buff=0.07))
+                 .next_to(P2(fv[k]), fv_dir[k], buff=0.07))
         labs.add(mono(k.lower(), color=col[k], size=15)
-                 .next_to(P2(tv[k]), outward(tv[k], tv), buff=0.07))
-    tag_fv = chip("FRONT VIEW", color=SLATE, size=12).move_to(P2(np.array([118.0, 40.0])))
-    tag_tv = chip("TOP VIEW", color=SLATE, size=12).move_to(P2(np.array([118.0, -36.0])))
+                 .next_to(P2(tv[k]), tv_dir[k], buff=0.07))
+    tag_fv = chip("FRONT VIEW", color=SLATE, size=12).move_to(P2(np.array([116.0, 62.0])))
+    tag_tv = chip("TOP VIEW", color=SLATE, size=12).move_to(P2(np.array([116.0, -34.0])))
 
     # the two apparent crossings, and the proof they are not one point
     x_fv = fv["A"] + (fv["B"] - fv["A"]) * G["xf"][0]
@@ -763,8 +770,10 @@ def sheet_pieces():
     # ---------------- aux 2: X2Y2 ⊥ a1b1, distances carried ----------------
     x2 = ref_line(q0, w2, {**a1, **a2})
     x2l = ref_label("X2Y2", x2)
-    ra2 = right_angle(a1["A"], (a1["B"] - a1["A"]) / np.linalg.norm(a1["B"] - a1["A"]),
-                      u2, colour=INK)
+    # at the crossing, one leg back along a1b1 and one along X2Y2 itself -
+    # both legs must lie on the two lines that meet, or the little square
+    # collapses into a straight stroke and says nothing
+    ra2 = right_angle(q0, -u2, w2, colour=INK)
     foot2 = {k: q0 + w2 * float(np.dot(a1[k] - q0, w2)) for k in ALL}
     rays2 = VGroup(*[riser(a1[k], a2[k]) for k in ALL])
     steps_src = VGroup(*[dim(foot1[k], tv[k], f"{G['steps'][k]:.0f}", col[k],

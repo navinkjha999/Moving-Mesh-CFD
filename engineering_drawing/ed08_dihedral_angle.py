@@ -708,8 +708,10 @@ class S03_Construction(MovingCameraScene):
         # ---------------- step 2: X2Y2 square to b1c1, distances carried ------
         x2 = ref_line(q0, w2, {**a1, **a2})
         x2l = ref_label("X2Y2", x2)
-        ra = right_angle(a1["B"], (a1["C"] - a1["B"]) / np.linalg.norm(a1["C"] - a1["B"]),
-                         u2, colour=INK)
+        # both legs must lie along the two lines that actually meet - X2Y2 and
+        # b1c1 - or the little square collapses into a straight stroke and says
+        # nothing. u2 runs along b1c1, w2 along X2Y2, and they cross at q0.
+        ra = right_angle(q0, -u2, w2, colour=INK)
         foot2 = {k: q0 + w2 * float(np.dot(a1[k] - q0, w2)) for k in ALL}
         rays2 = VGroup(*[riser(a1[k], a2[k], SLATE, width=1.0, opacity=0.45) for k in ALL])
         steps_src = VGroup(*[
