@@ -645,7 +645,9 @@ def cut_dir():
     return d, n
 
 
-AUX_GAP = 26.0           # X1Y1 stood off from the cut line
+AUX_GAP = 58.0           # X1Y1 stood off from the cut line. It has to clear
+                         # the section's own half-width, or the true shape is
+                         # drawn straight over the view it came from.
 
 
 def aux_point(x, z, y):
@@ -697,7 +699,7 @@ class S03_TrueShape(MovingCameraScene):
             dim(fv(RAD, 0), fv(RAD, HEIGHT), f"{HEIGHT:.0f}", SLATE,
                 size=13, offset=-12.0, gap=5.0),
             mono(f"Ø{DIA:.0f}", color=SLATE, size=13).move_to(tv(0, -RAD - 9)),
-            mono("45°", color=CUT_COL, size=14).move_to(fv(-4, 30)),
+            mono("45°", color=CUT_COL, size=14).move_to(fv(-1, 25)),
         )
 
         # ---------------- twelve divisions ------------------------------------
@@ -825,9 +827,10 @@ class S03_TrueShape(MovingCameraScene):
             Create(risers), FadeIn(cut_pts),
             lag_ratio=0.15,
         )
+        _, n_up = cut_dir()
         heights = VGroup(*[
             mono(f"{g['z']:.1f}", color=CUT_COL, size=11).move_to(
-                fv(g["x"], g["z"]) + np.array([0.0, 0.16, 0.0]))
+                fv(g["x"], g["z"]) + n_up * 5.0 * MM)
             for g in G["gens"][:4]])
         narrate(
             self,
@@ -929,9 +932,9 @@ class S04_Development(MovingCameraScene):
             mono(str(G["gens"][i % N]["k"]), color=SLATE, size=11)
             .move_to(dev(i * pitch, -7.0)) for i in range(N + 1)])
         base_dim = dim(dev(0, 0), dev(C, 0), f"π × {DIA:.0f} = {C:.1f}", DEV_COL,
-                       size=15, offset=-13.0, gap=7.0)
+                       size=15, offset=-26.0, gap=8.0)
         pitch_dim = dim(dev(0, 0), dev(pitch, 0), f"{pitch:.2f}", SLATE,
-                        size=12, offset=9.0, gap=4.5)
+                        size=12, offset=-15.0, gap=5.0)
 
         risers = VGroup(*[Line(dev(i * pitch, 0), dev(i * pitch, G["gens"][i % N]["z"]),
                                color=AUX_COL, stroke_width=1.2, stroke_opacity=0.7)
@@ -952,7 +955,7 @@ class S04_Development(MovingCameraScene):
 
         seam_l = Line(dev(0, 0), dev(0, G["gens"][0]["z"]), color=DEV_COL, stroke_width=4)
         seam_r = Line(dev(C, 0), dev(C, G["gens"][0]["z"]), color=DEV_COL, stroke_width=4)
-        tag_dev = chip("DEVELOPMENT", color=DEV_COL, size=13).move_to(dev(C / 2, -22))
+        tag_dev = chip("DEVELOPMENT", color=DEV_COL, size=13).move_to(dev(C * 0.86, 62))
 
         development = VGroup(base, ticks, tick_nums, risers, tops, curve,
                              seam_l, seam_r, break_dots)

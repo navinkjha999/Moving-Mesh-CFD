@@ -349,7 +349,14 @@ def rail_focus(panel, rungs, active, dim_level=0.26):
         for rung, a, b in zip(rungs, starts, targets):
             rung.set_opacity(interpolate(a, b, alpha))
 
-    return UpdateFromAlphaFunc(panel, _relight)
+    # suspend_mobject_updating=False is not optional. Manim switches a
+    # mobject's updaters OFF for the duration of any animation targeting it,
+    # and the updater this panel is carrying is the pin_to_frame() one that
+    # holds it against the camera frame. Relight it during a camera move with
+    # the default, and the rail is left behind in world space for the whole
+    # sentence - drifting off the top of the screen exactly when a step is
+    # being pointed at.
+    return UpdateFromAlphaFunc(panel, _relight, suspend_mobject_updating=False)
 
 
 

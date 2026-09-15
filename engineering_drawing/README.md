@@ -1,6 +1,6 @@
 # Engineering Drawing I — Sheet 4, *Basic Descriptive Geometry II*
 
-Manim CE 0.20.1 source for four YouTube lessons:
+Manim CE 0.20.1 source for five YouTube lessons:
 
 * **Episode 06 — Edge View, True Shape and True Size of an Oblique Plane**
   (Exercise 4, Set A, Q.6), about eleven minutes.
@@ -11,12 +11,15 @@ Manim CE 0.20.1 source for four YouTube lessons:
   (Exercise 4, Set A, Q.12), about eight minutes.
 * **Episode 09 — The Shortest Distance Between Two Skew Lines** (§4.10), and
   the common perpendicular put back on the given views, about eleven minutes.
+* **Episode 10 — Section, True Shape and Development** (Sheet 8, §9):
+  Exercise 7 (Set A) Q.2(a), a cylinder cut by a 45° plane, about nine minutes.
 
 ```
 ed06_true_shape.py      episode 06: five scenes, all the narration, all the geometry
 ed07_piercing_point.py  episode 07: six scenes
 ed08_dihedral_angle.py  episode 08: four scenes
 ed09_skew_lines.py      episode 09: five scenes
+ed10_development.py     episode 10: five scenes  (Sheet 8)
 ed_stage.py             the shared 3-D stage (HP, VP, XY, the four quadrants)
 ed_common.py            thin shim over cfd_common: narration, HUD and camera helpers
 cfd_common.py           the series infrastructure (voice, cache, loudnorm, fonts)
@@ -24,6 +27,7 @@ render_ed06.bat         renders episode 06 in running order at 1080p60
 render_ed07.bat         renders episode 07 in running order at 1080p60
 render_ed08.bat         renders episode 08 in running order at 1080p60
 render_ed09.bat         renders episode 09 in running order at 1080p60
+render_ed10.bat         renders episode 10 in running order at 1080p60
 ```
 
 ---
@@ -35,6 +39,7 @@ render_ed06.bat                              REM all five scenes, 1080p60
 render_ed07.bat                              REM all six scenes
 render_ed08.bat                              REM all four scenes
 render_ed09.bat                              REM all five scenes
+render_ed10.bat                              REM all five scenes
 render_ed08.bat S03                          REM just that one scene
 py -3.11 -m manim -qh ed06_true_shape.py S04_Construction
 py -3.11 -m manim -ql ed07_piercing_point.py S02_CuttingPlane   REM quick look
@@ -62,6 +67,7 @@ py -3.11 ed06_true_shape.py
 py -3.11 ed07_piercing_point.py
 py -3.11 ed08_dihedral_angle.py
 py -3.11 ed09_skew_lines.py
+py -3.11 ed10_development.py
 ```
 
 Each prints the worked solution its animation is about to draw. Episode 06:
@@ -182,6 +188,25 @@ Total ≈ 8 minutes.
 
 Total 11:08.
 
+### Episode 10 — the five scenes
+
+Sheet 8 this time, not Sheet 4: development of surfaces, and the first of the
+Exercise 7 (Set A) Q.2 solids. The figure has a detail worth keeping — 42 ×
+tan 45° is 42 and only 30 of height remains above the cut, so the plane leaves
+through the **top face** 30 along. That is why the section is only part of an
+ellipse, why the top view needs a chord, and why the development's top edge
+has two corners with a flat stretch between them.
+
+| Scene | ≈ | What it does |
+|---|---|---|
+| `S01_Unroll` | 1:26 | What a development *is*. The cylinder's lateral surface unrolls in front of you into a plain rectangle, πD by 50 — and it unrolls properly: the surface is bent to a curvature running from 1/R down to 0, so arc length is preserved in every frame rather than lerped flat. It bends about the generator opposite the seam, which centres the pattern and puts the join on the shortest generator, where the convention wants it. |
+| `S02_TheCut` | 2:05 | The 45° plane goes through, the top lifts away, and two facts appear: the section is an ellipse seen edge-on in the front view, and every generator now ends at a different height. Unroll it again and the top edge is a curve — with a flat stretch in the middle where the plane had already left the cylinder. |
+| `S03_TrueShape` | 2:32 | The sheet. Twelve divisions numbered from the seam, the chord marked where the plane runs out through the top face, each generator carried up to the cut, and then X1Y1 parallel to the cut with the widths brought from the top view: the true shape. 42 across the slope, 42.43 up it. |
+| `S04_Development` | 2:01 | The pattern. A base line πD = 131.95 long, twelve divisions of 10.996, each generator's own height stepped off and flown across from the front view, and a smooth curve through the tops — dead straight between the two breaks. |
+| `S05_Recap` | 1:09 | The method in four lines, and the two traps: πD is the diameter of the **base**, and everything stepped off must be a true length. |
+
+Total 9:12.
+
 ### Stitching the clips
 
 Each scene renders to its own file under
@@ -215,6 +240,13 @@ ffmpeg -f concat -safe 0 -i list.txt -c copy ed08_dihedral_angle.mp4
 ```bat
 (echo file 'S01_TheyDoNotMeet.mp4' & echo file 'S02_Strategy.mp4' & echo file 'S03_Construction.mp4' & echo file 'S04_BackToTheViews.mp4' & echo file 'S05_Recap.mp4') > list.txt
 ffmpeg -f concat -safe 0 -i list.txt -c copy ed09_skew_lines.mp4
+```
+
+**Episode 10**
+
+```bat
+(echo file 'S01_Unroll.mp4' & echo file 'S02_TheCut.mp4' & echo file 'S03_TrueShape.mp4' & echo file 'S04_Development.mp4' & echo file 'S05_Recap.mp4') > list.txt
+ffmpeg -f concat -safe 0 -i list.txt -c copy ed10_development.mp4
 ```
 
 Suggested chapters for the descriptions. The narration is timed from a word
@@ -263,6 +295,16 @@ Episode 09, off the rendered clips (179.7 s, 114.1 s, 169.9 s, 129.3 s, 75.2 s):
 04:54  The sheet: AB true length, AB as a point, 30.7 mm
 07:44  Where the link really is, and what it measures elsewhere
 09:53  Recap, and the true angle between skew lines
+```
+
+Episode 10, off the rendered clips (85.7 s, 125.4 s, 151.5 s, 120.8 s, 68.8 s):
+
+```
+00:00  What a development is: the surface, unrolled
+01:26  The cut, and what it does to the pattern
+03:31  The sheet: twelve generators, and the true shape
+06:03  The development: πD, twelve heights, one curve
+08:04  Recap, and the two traps
 ```
 
 ---
