@@ -156,16 +156,24 @@ def solve(n=N):
         d = np.asarray(p, dtype=float) - origin
         return np.array([float(d @ u_hat), float(d @ v_hat)])
 
+    # The cut exists where the plane is still below the top face, and that is
+    # the arc |theta| <= theta_break measured from the seam - an arc that WRAPS
+    # THROUGH theta = 0. Sweeping theta from 0 to 360 and keeping whatever
+    # passes the test collects the two ends of that arc in the wrong order and
+    # closes the polygon straight across the middle, which draws the section
+    # with a wedge bitten out of it. So sweep the arc itself.
     true_shape = []
-    for k in range(361):
-        th = math.radians(k)
+    steps = 360
+    for k in range(steps + 1):
+        th = -theta_break + 2 * theta_break * k / steps
         x, y = -RAD * math.cos(th), RAD * math.sin(th)
         z = plane_z(x)
-        if z <= HEIGHT + 1e-9:
-            true_shape.append(to_plane((x, y, z)))
-    # ... closed off by the chord where the plane runs out onto the top face
-    chord = [to_plane((x_top, half_chord, HEIGHT)),
-             to_plane((x_top, -half_chord, HEIGHT))]
+        assert z <= HEIGHT + 1e-9, "the swept arc left the solid"
+        true_shape.append(to_plane((x, y, z)))
+    # the two ends ARE the chord, so closing the polygon draws it
+    chord = [true_shape[0], true_shape[-1]]
+    for end, want_y in ((true_shape[0], -half_chord), (true_shape[-1], half_chord)):
+        assert abs(abs(end[0]) - half_chord) < 1e-6, "an arc end is not on the chord"
 
     semi_minor = RAD                                   # across the slope
     semi_major = RAD / math.cos(ang)                   # up the slope
@@ -186,6 +194,19 @@ def solve(n=N):
     projected = math.pi * RAD * RAD - circ_seg_area(RAD, x_top)
     true_area = projected / math.cos(ang)
     assert projected > 0 and true_area > projected
+
+    def shoelace(poly):
+        a = 0.0
+        for i in range(len(poly)):
+            x0, y0 = poly[i]
+            x1, y1 = poly[(i + 1) % len(poly)]
+            a += x0 * y1 - x1 * y0
+        return abs(a) / 2.0
+
+    drawn = shoelace(true_shape)
+    assert abs(drawn - true_area) / true_area < 2e-4, (
+        f"the section as drawn encloses {drawn:.1f} mm² but the geometry says "
+        f"{true_area:.1f} - the boundary is not being walked in order")
 
     slant = (HEIGHT - CUT_AT) / math.sin(ang)
     run = x_top + RAD
@@ -562,15 +583,13 @@ class S02_TheCut(ThreeDScene):
 
     def section_face(self):
         """The elliptical cut face, standing in space."""
-        pts = []
-        for k in range(0, 361, 3):
-            th = math.radians(k)
+        # sweep the arc that is actually cut, not 0..360 with a filter - see
+        # the note in solve() about the wedge that produces
+        tb, pts = G["theta_break"], []
+        for k in range(121):
+            th = -tb + 2 * tb * k / 120.0
             x, y = -RAD * math.cos(th), RAD * math.sin(th)
-            z = plane_z(x)
-            if z <= HEIGHT + 1e-9:
-                pts.append(pt3(x, y, z))
-        pts.append(pt3(G["x_top"], -G["half_chord"], HEIGHT))
-        pts.insert(0, pt3(G["x_top"], G["half_chord"], HEIGHT))
+            pts.append(pt3(x, y, plane_z(x)))
         face = Polygon(*pts, stroke_color=CUT_COL, stroke_width=3.5,
                        fill_color=CUT_COL, fill_opacity=0.45)
         return face
@@ -737,16 +756,13 @@ class S03_TrueShape(MovingCameraScene):
 
         shape = VMobject(stroke_color=CUT_COL, stroke_width=4,
                          fill_color=CUT_COL, fill_opacity=0.2)
+        tb = G["theta_break"]
         ring = []
-        for k in range(0, 361, 2):
-            th = math.radians(k)
+        for k in range(181):
+            th = -tb + 2 * tb * k / 180.0
             x, y = -RAD * math.cos(th), RAD * math.sin(th)
-            z = plane_z(x)
-            if z <= HEIGHT + 1e-9:
-                ring.append(aux_point(x, z, y))
-        ring = ([aux_point(G["x_top"], HEIGHT, G["half_chord"])] + ring
-                + [aux_point(G["x_top"], HEIGHT, -G["half_chord"])])
-        shape.set_points_as_corners(ring + [ring[0]])
+            ring.append(aux_point(x, plane_z(x), y))
+        shape.set_points_as_corners(ring + [ring[0]])   # closing it IS the chord
 
         major = dim(aux_point(-RAD, CUT_AT, 0), aux_point(G["x_top"], HEIGHT, 0),
                     f"{G['slant']:.1f}", CUT_COL, size=13, offset=26.0, gap=6.0)
