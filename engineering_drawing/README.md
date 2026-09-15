@@ -258,11 +258,11 @@ shows (c) and (d) as variations rather than as three separate drawings.
 | Scene | ≈ | What it does |
 |---|---|---|
 | `S01_FoldItOut` | 1:47 | A prism is *folded* out, not rolled: each face hinges flat about the edge it shares with the last one, by α times the exterior angle, so the side lengths hold at every frame and the trace closes exactly at α = 1. Three rectangles, 120 across — the perimeter — where the cylinder had πD. |
-| `S02_SheetB` | 1:41 | Q.2(b) in full. The middle line of the front view is not a fold in the drawing but the third edge of the prism pointing at you. Three edge heights read straight off the front view — no rotation, because a vertical edge is never foreshortened there — and the tops joined with **straight** lines, since a flat face cut by a flat plane meets it in a straight line. |
+| `S02_SheetB` | 1:45 | Q.2(b) in full. The middle line of the front view is not a fold in the drawing but the third edge of the prism pointing at you. Three edge heights read straight off the front view — no rotation, because a vertical edge is never foreshortened there — and the tops joined with **straight** lines, since a flat face cut by a flat plane meets it in a straight line. |
 | `S03_TwoPlanes` | 2:09 | Q.2(c) and (d), and the point of the episode. Where two cutting planes meet, their line of intersection crosses a **face**, not an edge — the back face in (c), the front face in (d) — so the development needs a point there. Miss it and you draw one straight line where there should be two. A corner in the pattern where the solid has no edge at all. |
 | `S04_Recap` | 1:17 | Prisms against cylinders, and the number people get wrong: the width is the perimeter of the **base**, measured in the top view where the sides are true length. |
 
-Total 7:15.
+Total 6:58.
 
 ### Episode 13 — the four scenes
 
@@ -418,13 +418,13 @@ Episode 11, off the rendered clips (102.0 s, 128.0 s, 104.1 s, 123.0 s, 94.3 s):
 07:37  Recap, the traps, and the pyramid
 ```
 
-Episode 12, off the rendered clips (106.9 s, 101.1 s, 129.0 s, 77.1 s):
+Episode 12, off the rendered clips (106.9 s, 104.9 s, 129.0 s, 77.1 s):
 
 ```
 00:00  Folding a prism out: the perimeter, not πD
-01:47  Q.2(b): three edge heights, three straight lines
-03:28  Q.2(c) and (d): a corner where there is no edge
-05:37  Recap, and the number people get wrong
+01:46  Q.2(b): three edge heights, three straight lines
+03:31  Q.2(c) and (d): a corner where there is no edge
+05:40  Recap, and the number people get wrong
 ```
 
 Episode 13, off the rendered clips (167.6 s, 161.9 s, 144.0 s, 78.3 s):
