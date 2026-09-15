@@ -540,10 +540,9 @@ class S01_TheyDoNotMeet(ProjectionScene):
         up = up - axis * float(np.dot(up, axis))
         up = up / np.linalg.norm(up)
         note = billboard(self, VGroup(
-            chip("get ONE line to a POINT VIEW", color=AB_COL, size=15),
-            chip("the shortest distance is then the PERPENDICULAR to the other",
-                 color=SD_COL, size=15),
-        ).arrange(DOWN, buff=0.12).move_to(mid - up * 1.15))
+            chip("get ONE line to a POINT VIEW", color=AB_COL, size=30),
+            chip("the answer is the PERPENDICULAR from it", color=SD_COL, size=30),
+        ).arrange(DOWN, buff=0.1).move_to(mid - up * 1.15))
         narrate(
             self,
             "That is the whole episode in one picture. Get a view in which one of "
@@ -739,7 +738,7 @@ def sheet_pieces():
                  .next_to(P2(fv[k]), fv_dir[k], buff=0.07))
         labs.add(mono(k.lower(), color=col[k], size=15)
                  .next_to(P2(tv[k]), tv_dir[k], buff=0.07))
-    tag_fv = chip("FRONT VIEW", color=SLATE, size=12).move_to(P2(np.array([124.0, 48.0])))
+    tag_fv = chip("FRONT VIEW", color=SLATE, size=12).move_to(P2(np.array([128.0, 58.0])))
     tag_tv = chip("TOP VIEW", color=SLATE, size=12).move_to(P2(np.array([124.0, -34.0])))
 
     # the two apparent crossings, and the proof they are not one point
