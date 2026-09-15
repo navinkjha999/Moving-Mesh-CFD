@@ -74,7 +74,7 @@ DEV_COL = VIOLET
 AUX_COL = CREAM
 
 MM = 0.026
-S3 = 0.095               # the solid has a wide frame to fill
+S3 = 0.085               # the solid has a wide frame to fill
 PYR_CX = 5.0             # mid-way between the base centre and the leaning apex
 
 # ==========================================================================
@@ -292,9 +292,11 @@ def pyramid_3d(apex=None, fill=0.28, h=None):
 class S01_WhatIsOblique(ThreeDScene):
     def construct(self):
         self.camera.background_color = NAVY
-        # nearly front-on (theta close to -90) so the LEAN reads as a lean, and a
-        # long focal distance so the near corner is not thrown forward into a wedge
-        self.set_camera_orientation(phi=72 * DEGREES, theta=-74 * DEGREES,
+        # a three-quarter view, not a near-front-on one: at theta close to -90
+        # the y axis collapses onto the screen's vertical, and anything labelled
+        # off the back or front of the base is thrown clean off the frame. A long
+        # focal distance keeps the near corner from being blown up into a wedge.
+        self.set_camera_orientation(phi=68 * DEGREES, theta=-60 * DEGREES,
                                     zoom=1.0, focal_distance=150.0)
         bar = hud(self, title_bar("Oblique Solids",
                                   "Sheet 8 · §10 · when the apex leans over"))
@@ -311,7 +313,7 @@ class S01_WhatIsOblique(ThreeDScene):
 
         right_tl = float(np.linalg.norm(right_apex - g["base"][0]))
         tag = billboard(self, mono(f"all four {right_tl:.2f}", color=TL_COL, size=24)
-                        .move_to(pt3((0, -46, -20), h)))
+                        .move_to(pt3((-4, -44, 0), h)))
         narrate(
             self,
             "A square pyramid, thirty-five on the side of its base. Its apex is "
@@ -343,10 +345,13 @@ class S01_WhatIsOblique(ThreeDScene):
         # out beyond each corner and below the base, or they land on the solid
         # out past each corner and well below the base - anything closer is
         # projected straight back onto the solid
-        lens_at = [(-48.0, 0.0), (0.0, -46.0), (46.0, 0.0), (0.0, 46.0)]
+        # each one placed where the projection actually puts it, not where the
+        # plan says it should be: edge 4 sits at the BACK of the base, which
+        # projects straight onto the solid unless it is pushed well past it
+        lens_at = [(-52.0, 0.0), (-4.0, -48.0), (44.0, 0.0), (-4.0, 66.0)]
         lens = VGroup(*[
             billboard(self, mono(f"{e['tl']:.2f}", color=TL_COL, size=20)
-                      .move_to(pt3((lens_at[k][0], lens_at[k][1], -20), h)))
+                      .move_to(pt3((lens_at[k][0], lens_at[k][1], -4), h)))
             for k, e in enumerate(g["edges"])])
         narrate(
             self,
@@ -711,19 +716,19 @@ class S03_SheetB(MovingCameraScene):
             mono(f"{k + 1}₁", color=CUT_COL, size=12).move_to(
                 aux_pt(q[0] + ts_off[k][0], q[1] + ts_off[k][1], base_xz))
             for k, q in enumerate(ts)])
-        W_AT = u_max + 14.0
-        w_dim = VGroup(
-            *[Line(aux_pt(ts[k][0], ts[k][1], base_xz),
-                   aux_pt(W_AT + 3, ts[k][1], base_xz), color=MUTED, stroke_width=1.0)
-              for k in (1, 3)],
-            dim(aux_pt(W_AT, ts[1][1], base_xz), aux_pt(W_AT, ts[3][1], base_xz),
-                f"{2 * abs(ts[1][1]):.2f}", TL_COL, offset=0.0, gap=-6.5, size=12),
-        )
+        # a width dimension across a kite crosses the kite whatever you do with
+        # the offset, and carried out past the far corner it runs into the
+        # caption. The figure goes in the caption instead, where it is read.
+        w_dim = VGroup()
         l_dim = dim(aux_pt(0, 0, base_xz), aux_pt(u_max, 0, base_xz),
                     f"{u_max:.2f}", TL_COL, offset=-18.0, gap=6.0, size=12)
         # the caption runs across the sheet, not along the cut, so it has to
-        # clear the HIGHEST corner of the kite, not just its centre line
-        dev_tag = caption("TRUE SHAPE", color=CUT_COL, size=16).move_to(P2(-14, 86))
+        # clear the HIGHEST corner of the kite, not just its centre line - and
+        # it has to keep out from under the pinned title bar, top left
+        dev_tag = VGroup(
+            caption("TRUE SHAPE", color=CUT_COL, size=16),
+            mono(f"{u_max:.2f} long x {2 * abs(ts[1][1]):.2f} wide", color=TL_COL, size=13),
+        ).arrange(DOWN, buff=0.10).move_to(P2(46, 84))
         aux = VGroup(refline, ref_tag, projectors, ts_poly, ts_dots, ts_tags,
                      w_dim, l_dim, dev_tag)
 
@@ -1060,9 +1065,12 @@ def cone_views():
                             color=SOLID_COL, stroke_width=1.5, stroke_opacity=0.75)
                        for gg in c["gens"]])
     tv_out = VGroup(circle, tv_gens, Dot(tv(ap[0], ap[1]), radius=0.042, color=SOLID_COL))
+    # generator 7's rim point is on the line to the apex plan, so its number
+    # radially out lands on the apex dot itself - that one goes off the axis
     nums = VGroup(*[
         mono(str(gg["k"]), color=SLATE, size=11).move_to(
-            tv(gg["v"][0] * 1.30, gg["v"][1] * 1.30))
+            tv(23.0, -9.0) if gg["k"] == 7
+            else tv(gg["v"][0] * 1.30, gg["v"][1] * 1.30))
         for gg in c["gens"]])
     return fv_out, fv_gens, tv_out, nums
 
@@ -1088,7 +1096,7 @@ class S05_ConeAndRecap(MovingCameraScene):
         dia_dim = VGroup(
             DoubleArrow(tv(-R, 0), tv(R, 0), buff=0, color=SLATE, stroke_width=1.6,
                         tip_length=0.09),
-            mono("Ø42", color=SLATE, size=12).move_to(tv(-R - 17, 0)),
+            mono("Ø42", color=SLATE, size=12).move_to(tv(-R - 26, 0)),
         )
         # the axis dimensions have done their work once the generators arrive -
         # leaving them on turns the front view into a thicket
@@ -1129,7 +1137,8 @@ class S05_ConeAndRecap(MovingCameraScene):
         hyp = VGroup(*[Line(tl_apex, tl_point(p, 0), color=TL_COL, stroke_width=2.0)
                        for p in plans])
         feet = VGroup(*[Dot(tl_point(p, 0), radius=0.026, color=TL_COL) for p in plans])
-        h_dim = dim(tl_point(0, 0), tl_point(0, H), f"{H:.2f}", SLATE, offset=7.0, size=12)
+        h_dim = dim(tl_point(0, 0), tl_point(0, H), f"{H:.2f}", SLATE, offset=7.0,
+                    gap=9.0, size=12)
         tl_diag = VGroup(axis, upright, hyp, feet, h_dim)
         tl_tag = caption("TRUE LENGTHS", color=TL_COL, size=15).move_to(tl_point(30, H + 14))
 
@@ -1283,14 +1292,14 @@ class S05_ConeAndRecap(MovingCameraScene):
                  color=CUT_COL, size=17),
             chip("no sector, no πD/L formula — those belong to right solids only",
                  color=GOLD, size=17),
-        ).arrange(DOWN, buff=0.18)), corner=ORIGIN, buff=0.0)
+        ).arrange(DOWN, buff=0.18), opacity=0.97), corner=ORIGIN, buff=0.0)
         self.add_foreground_mobjects(recap)
         narrate(
             self,
             "So: oblique solids cost you one extra diagram and buy you a method that "
             "never fails. Find every true length. Build every face from three of them. "
             "Mark the cut where it truly falls. Nothing else in the sheet changes.",
-            settle(FadeIn(recap)),
+            settle(FadeOut(sheet), FadeIn(recap), lag=0.35),
         )
 
         finish_audio(self)
