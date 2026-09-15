@@ -588,9 +588,16 @@ class S03_Sheet(MovingCameraScene):
 
         circle = Circle(radius=RAD * MM, color=SOLID_COL, stroke_width=3.4
                         ).move_to(tv(0, 0))
-        join_circle = DashedLine(tv(0, 0), tv(0, 0))       # placeholder, replaced below
-        join_circle = Circle(radius=G["r_join"] * MM, color=CUT_COL, stroke_width=2.6
-                             ).move_to(tv(0, 0))
+        # The cut in the TOP view is two different curves, not one circle: the
+        # level plane gives a true semicircle on the left, and the sloping
+        # plane's edge projects as a flattened half-oval on the right.
+        left_half = ParametricFunction(
+            lambda a: tv(G["r_join"] * math.cos(a), G["r_join"] * math.sin(a)),
+            t_range=[math.pi / 2, 3 * math.pi / 2], color=CUT_COL, stroke_width=3.2)
+        right_half = ParametricFunction(
+            lambda a: tv(*gen_point(a, cut_t(a))[:2]),
+            t_range=[-math.pi / 2, math.pi / 2], color=CUT_COL, stroke_width=3.2)
+        join_circle = VGroup(left_half, right_half)
         centre_lines = VGroup(
             DashedLine(tv(-RAD - 6, 0), tv(RAD + 6, 0), color=MUTED,
                        stroke_width=1.4, dash_length=0.06),
@@ -606,10 +613,10 @@ class S03_Sheet(MovingCameraScene):
             for g in G["gens"]])
         dims = VGroup(
             dim(fv(RAD, 0), fv(0, HEIGHT), f"{G['slant']:.2f}", TL_COL,
-                size=13, offset=-9.0, gap=5.0),
+                size=13, offset=-16.0, gap=7.0),
             dim(fv(-RAD - 10, 0), fv(-RAD - 10, CUT_AT), f"{CUT_AT:.0f}", SLATE,
                 size=13, offset=0.0, gap=5.0),
-            mono("30°", color=CUT_COL, size=13).move_to(fv(9, 25.5)),
+            mono("30°", color=CUT_COL, size=13).move_to(fv(15, 21)),
             mono(f"Ø{DIA:.0f}", color=SLATE, size=13).move_to(tv(0, -RAD - 9)),
         )
         given = VGroup(xy, xy_lab, outline, axis, cuts, circle, centre_lines)
@@ -632,9 +639,16 @@ class S03_Sheet(MovingCameraScene):
                           for z in levels])
         tl_lines = VGroup(*[Line(fv(0, HEIGHT), fv(radius_at(z), z),
                                  color=TL_COL, stroke_width=3.0) for z in levels])
-        tl_tags = VGroup(*[
-            mono(f"{SLANT * (1 - z / HEIGHT):.2f}", color=TL_COL, size=12).move_to(
-                fv(radius_at(z) + 12, z + 1.5)) for z in levels])
+        # the four cut heights are within five millimetres of one another, so
+        # labelling each beside its own landing point stacks them into a blob;
+        # fan them out and lead each back to its point
+        tl_tags = VGroup()
+        for i, z in enumerate(levels):
+            tag = mono(f"{SLANT * (1 - z / HEIGHT):.2f}", color=TL_COL, size=12)
+            tag.move_to(fv(RAD + 26, 14 + 7.5 * i))
+            tl_tags.add(VGroup(tag, DashedLine(
+                tag.get_left() + LEFT * 0.04, fv(radius_at(z), z), color=TL_COL,
+                stroke_width=0.9, stroke_opacity=0.45, dash_length=0.05)))
 
         sheet = VGroup(given, dims, spokes, numbers, join_circle, fv_gens,
                        cut_dots, swings, landed, tl_lines, tl_tags)
@@ -704,7 +718,7 @@ class S03_Sheet(MovingCameraScene):
             "five on the right cross the sloping one, each a little higher than the "
             "last.",
             rail_focus(rail, rungs, 2),
-            FadeIn(cut_dots),
+            FadeIn(cut_dots), Create(join_circle),
             lag_ratio=0.12,
         )
 
@@ -780,8 +794,8 @@ class S04_Development(MovingCameraScene):
                 dev(-half + g["dev"], SLANT + 7)) for g in G["gens"]])
         sector_dim = VGroup(
             mono(f"R = {G['slant']:.2f}", color=DEV_COL, size=15).move_to(
-                dev(-half * 0.55, SLANT * 0.55)),
-            mono(f"{SECTOR:.2f}°", color=DEV_COL, size=15).move_to(dev(0, 13)))
+                dev(-half, SLANT * 0.52) + LEFT * 0.42),
+            mono(f"{SECTOR:.2f}°", color=DEV_COL, size=15).move_to(dev(0, 9.5)))
 
         cut_dots = VGroup(*[Dot(dev(-half + g["dev"], g["apex"]), radius=0.032,
                                 color=CUT_COL) for g in G["gens"]]
@@ -797,7 +811,7 @@ class S04_Development(MovingCameraScene):
         development = VGroup(apex_dot, base_arc, edges, rays, ray_nums,
                              cut_dots, cut_curve)
         tag_dev = chip("DEVELOPMENT", color=DEV_COL, size=13).move_to(
-            dev(-half, SLANT + 20))
+            dev(0, -15))
 
         sheet = VGroup(front, tag_fv, development, sector_dim, tag_dev)
         centre, W = frame_target([front, development], right=0.26)
@@ -882,12 +896,13 @@ class S04_Development(MovingCameraScene):
         )
         narrate(
             self,
-            "Notice the shape of that inner curve. It runs level across the middle "
-            "third, because those seven generators were all cut at the same height "
-            "by the level plane, so they are all the same distance from the apex - "
-            "and on the development, equal distances from the apex is an ARC, not a "
-            "straight line. Then it dips in on both sides where the sloping plane "
-            "cut deeper.",
+            "Notice the shape of that inner curve. At both ends it runs as an even "
+            "arc, because generators one to four and ten to twelve were all cut at "
+            "the same height by the level plane, so they are all the same distance "
+            "from the apex - and on a development, equal distances from the apex is "
+            "an ARC, not a straight line. In the middle, where the sloping plane cut "
+            "higher up the cone, the curve swings in towards the apex: those "
+            "generators keep less of their length.",
             look_at(self, [development], right=0.26),
         )
         narrate(

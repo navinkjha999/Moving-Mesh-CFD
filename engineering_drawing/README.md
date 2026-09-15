@@ -1,6 +1,6 @@
 # Engineering Drawing I — Sheet 4, *Basic Descriptive Geometry II*
 
-Manim CE 0.20.1 source for five YouTube lessons:
+Manim CE 0.20.1 source for six YouTube lessons:
 
 * **Episode 06 — Edge View, True Shape and True Size of an Oblique Plane**
   (Exercise 4, Set A, Q.6), about eleven minutes.
@@ -13,6 +13,8 @@ Manim CE 0.20.1 source for five YouTube lessons:
   the common perpendicular put back on the given views, about eleven minutes.
 * **Episode 10 — Section, True Shape and Development** (Sheet 8, §9):
   Exercise 7 (Set A) Q.2(a), a cylinder cut by a 45° plane, about nine minutes.
+* **Episode 11 — The Cone: True Length and Development** (Sheet 8, §9):
+  Exercise 7 (Set A) Q.2(e), a cone cut by two planes at once, about nine minutes.
 
 ```
 ed06_true_shape.py      episode 06: five scenes, all the narration, all the geometry
@@ -20,6 +22,7 @@ ed07_piercing_point.py  episode 07: six scenes
 ed08_dihedral_angle.py  episode 08: four scenes
 ed09_skew_lines.py      episode 09: five scenes
 ed10_development.py     episode 10: five scenes  (Sheet 8)
+ed11_cone.py            episode 11: five scenes  (Sheet 8)
 ed_stage.py             the shared 3-D stage (HP, VP, XY, the four quadrants)
 ed_common.py            thin shim over cfd_common: narration, HUD and camera helpers
 cfd_common.py           the series infrastructure (voice, cache, loudnorm, fonts)
@@ -28,6 +31,7 @@ render_ed07.bat         renders episode 07 in running order at 1080p60
 render_ed08.bat         renders episode 08 in running order at 1080p60
 render_ed09.bat         renders episode 09 in running order at 1080p60
 render_ed10.bat         renders episode 10 in running order at 1080p60
+render_ed11.bat         renders episode 11 in running order at 1080p60
 ```
 
 ---
@@ -40,6 +44,7 @@ render_ed07.bat                              REM all six scenes
 render_ed08.bat                              REM all four scenes
 render_ed09.bat                              REM all five scenes
 render_ed10.bat                              REM all five scenes
+render_ed11.bat                              REM all five scenes
 render_ed08.bat S03                          REM just that one scene
 py -3.11 -m manim -qh ed06_true_shape.py S04_Construction
 py -3.11 -m manim -ql ed07_piercing_point.py S02_CuttingPlane   REM quick look
@@ -68,6 +73,7 @@ py -3.11 ed07_piercing_point.py
 py -3.11 ed08_dihedral_angle.py
 py -3.11 ed09_skew_lines.py
 py -3.11 ed10_development.py
+py -3.11 ed11_cone.py
 ```
 
 Each prints the worked solution its animation is about to draw. Episode 06:
@@ -207,6 +213,29 @@ has two corners with a flat stretch between them.
 
 Total 9:12.
 
+### Episode 11 — the five scenes
+
+The other solid in Q.2 that is worth a film of its own. Note that Q.2 has no
+pyramid in it — (b) and (c) are triangular prisms and (d) is a **pentagonal
+prism** — so the cone is the one solid in the exercise needing the true-length
+construction, and the pyramid is covered in the recap, where the method is
+identical.
+
+The cone is cut by **two planes at once**, meeting on the axis 25 above the
+base: horizontal across the left half, 30° rising to the right. So the section
+is in two pieces — a half-circle, already true in the top view because a
+horizontal face always is, and a half-ellipse that needs an auxiliary.
+
+| Scene | ≈ | What it does |
+|---|---|---|
+| `S01_TheCone` | 1:42 | The cone, its twelve generators, the slant height 54.23, and the two planes. The waste lifts off and leaves the two section faces meeting on one diameter. |
+| `S02_TrueLength` | 2:08 | The whole difficulty in one scene. Generators 7 and 4 are the same length in space; from the front view 7 measures 27.12 and 4 measures 25.00. The fix — swing the point about the axis until it lands on the outline, where its height and its distance from the apex are both unchanged — is watched in space before it is ever drawn. |
+| `S03_Sheet` | 1:44 | The orthographic drawing, the twelve cut points, and the twelve true lengths lifted off by rotation. There are only four different answers: the seven level-cut generators all give 27.12, and symmetry pairs the rest. |
+| `S04_Development` | 1:55 | The sector: radius 54.23, angle 360 R/L = 139.40°, twelve divisions of 11.6170°, and each true length stepped off from the apex. The inner curve runs as an arc at both ends — equal distances from the apex is an arc, not a straight line. |
+| `S05_Recap` | 1:34 | The method, the two traps, and the pyramid: the same problem, since a cone is only a pyramid with a great many very thin faces. |
+
+Total 9:04.
+
 ### Stitching the clips
 
 Each scene renders to its own file under
@@ -247,6 +276,13 @@ ffmpeg -f concat -safe 0 -i list.txt -c copy ed09_skew_lines.mp4
 ```bat
 (echo file 'S01_Unroll.mp4' & echo file 'S02_TheCut.mp4' & echo file 'S03_TrueShape.mp4' & echo file 'S04_Development.mp4' & echo file 'S05_Recap.mp4') > list.txt
 ffmpeg -f concat -safe 0 -i list.txt -c copy ed10_development.mp4
+```
+
+**Episode 11**
+
+```bat
+(echo file 'S01_TheCone.mp4' & echo file 'S02_TrueLength.mp4' & echo file 'S03_Sheet.mp4' & echo file 'S04_Development.mp4' & echo file 'S05_Recap.mp4') > list.txt
+ffmpeg -f concat -safe 0 -i list.txt -c copy ed11_cone.mp4
 ```
 
 Suggested chapters for the descriptions. The narration is timed from a word
@@ -305,6 +341,16 @@ Episode 10, off the rendered clips (85.7 s, 125.4 s, 151.5 s, 120.8 s, 68.8 s):
 03:31  The sheet: twelve generators, and the true shape
 06:03  The development: πD, twelve heights, one curve
 08:04  Recap, and the two traps
+```
+
+Episode 11, off the rendered clips (102.0 s, 128.0 s, 104.1 s, 115.3 s, 94.3 s):
+
+```
+00:00  The cone, and the two planes that cut it
+01:42  Why a generator lies, and how to make it talk
+03:50  The sheet: twelve cut points, four true lengths
+05:34  The development: a sector of 139.40°
+07:30  Recap, the traps, and the pyramid
 ```
 
 ---
