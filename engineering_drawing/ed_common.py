@@ -45,6 +45,8 @@ from manim import (
     config,
     interpolate,
 )
+from manim.animation.animation import prepare_animation
+
 import numpy as _np
 
 # --------------------------------------------------------------------------
@@ -375,7 +377,11 @@ def settle(*anims, share: float = 0.2, lag: float = 0.12):
     whatever the sentence turns out to last: the words land in the first fifth
     and stay lit for the rest, at any sentence length.
     """
-    group = anims[0] if len(anims) == 1 else AnimationGroup(*anims, lag_ratio=lag)
+    # A bare `mob.animate...` is an _AnimationBuilder, not an Animation, and has
+    # no run_time to scale - asking for one walks into the mobject's __getattr__
+    # and raises. prepare_animation() is what scene.play() itself uses.
+    built = [prepare_animation(a) for a in anims]
+    group = built[0] if len(built) == 1 else AnimationGroup(*built, lag_ratio=lag)
     return Succession(group, Wait(group.run_time * (1.0 - share) / share))
 
 
