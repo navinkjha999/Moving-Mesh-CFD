@@ -133,6 +133,14 @@ def solve_prism(key):
     verts, R = corners(n, side, spec["orient"])
     split = len(spec["cuts"]) > 1          # is there a junction at x = 0?
 
+    # Start the numbering - and so the seam - at the SHORTEST edge, which is
+    # where the convention puts the join on a truncated solid. Rotating the
+    # list keeps the cyclic order, so the development still unrolls the right
+    # way round; it only changes where it is cut open.
+    heights = [cut_height(spec, v[0]) for v in verts]
+    start = min(range(n), key=lambda i: (round(heights[i], 9), i))
+    verts = verts[start:] + verts[:start]
+
     for v in verts:
         z = cut_height(spec, v[0])
         assert 0.0 < z < height, f"{key}: the cut leaves the solid at a corner"
@@ -533,11 +541,15 @@ class S02_SheetB(MovingCameraScene):
         fv, tv, dv = S["fv"], S["tv"], S["dv"]
         xy = Line(P2(-32, XY_Y), P2(g["perimeter"] + 48, XY_Y),
                   color=INK, stroke_width=2.2)
+        # offset is measured 90° anticlockwise from the arrow's direction, and
+        # these arrows all point up, so a POSITIVE offset moves the dimension
+        # to the left. Send each one outward from the axis.
         heights = VGroup(*[
             dim(fv(v[0], 0), fv(v[0], g["edges"][k]["z"]),
                 f"{g['edges'][k]['z']:.2f}", CUT_COL, size=12,
-                offset=off, gap=5.0)
-            for k, (v, off) in enumerate(zip(g["verts"], (5.0, -5.0, 5.0)))])
+                offset=(7.0 if v[0] < -1e-9 else -7.0 if v[0] > 1e-9 else 5.0),
+                gap=5.0)
+            for k, v in enumerate(g["verts"])])
         given = VGroup(xy, S["front"], S["top"])
         sheet = VGroup(given, heights, S["development"], S["dev_dim"])
 
@@ -592,10 +604,11 @@ class S02_SheetB(MovingCameraScene):
 
         narrate(
             self,
-            f"Now read the heights. Edge three, on the left, is the twenty-two we "
-            f"were given. Edge one, the one pointing at us, is "
-            f"{g['edges'][0]['z']:.2f}. Edge two, on the right, is "
-            f"{g['edges'][1]['z']:.2f}. The edges are vertical, so the front view "
+            f"Now read the heights. Edge one, on the left, is the twenty-two we "
+            f"were given - the shortest, which is why the seam goes there. Edge "
+            f"two, the one pointing at us, is {g['edges'][1]['z']:.2f}. Edge three, "
+            f"on the right, is {g['edges'][2]['z']:.2f}. The edges are vertical, so "
+            f"the front view "
             "draws every one of them at its true length - no rotating, no "
             "auxiliaries. That is the whole advantage of a prism over a cone.",
             rail_focus(rail, rungs, 2),
@@ -825,13 +838,19 @@ class S04_Recap(Scene):
             lag_ratio=0.25,
         )
 
-        table = VGroup(
-            mono("Q.2(b)   120 wide   edges 33.55 · 45.09 · 22.00", color=DEV_COL, size=16),
-            mono("Q.2(c)   120 wide   edges 27.00 · 38.55 · 27.00  + break at 60",
-                 color=DEV_COL, size=16),
-            mono("Q.2(d)   150 wide   edges 43.00 · 52.27 · 28 · 28 · 28  + break at 135",
-                 color=DEV_COL, size=16),
-        ).arrange(DOWN, buff=0.14, aligned_edge=LEFT).move_to(np.array([0.0, -1.5, 0]))
+        # generated, not typed: these numbers moved once already when the seam
+        # was put on the shortest edge, and a hand-copied table would still be
+        # quoting the old ones
+        def row(key):
+            g = G[key]
+            hs = " · ".join(f"{e['z']:.2f}" for e in g["edges"][:g["n"]])
+            brk = (f"  + break at {g['breaks'][0][0]:.0f}" if g["breaks"] else "")
+            return mono(f"Q.2({key})   {g['perimeter']:.0f} wide   edges {hs}{brk}",
+                        color=DEV_COL, size=16)
+
+        table = VGroup(row("b"), row("c"), row("d")
+                       ).arrange(DOWN, buff=0.14, aligned_edge=LEFT
+                                 ).move_to(np.array([0.0, -1.5, 0]))
         narrate(
             self,
             "The three answers to check yourself against.",

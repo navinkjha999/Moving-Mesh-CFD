@@ -1,6 +1,6 @@
 # Engineering Drawing I — Sheet 4, *Basic Descriptive Geometry II*
 
-Manim CE 0.20.1 source for six YouTube lessons:
+Manim CE 0.20.1 source for seven YouTube lessons:
 
 * **Episode 06 — Edge View, True Shape and True Size of an Oblique Plane**
   (Exercise 4, Set A, Q.6), about eleven minutes.
@@ -15,6 +15,9 @@ Manim CE 0.20.1 source for six YouTube lessons:
   Exercise 7 (Set A) Q.2(a), a cylinder cut by a 45° plane, about nine minutes.
 * **Episode 11 — The Cone: True Length and Development** (Sheet 8, §9):
   Exercise 7 (Set A) Q.2(e), a cone cut by two planes at once, about nine minutes.
+* **Episode 12 — Prisms: a Corner With No Edge** (Sheet 8, §9):
+  Exercise 7 (Set A) Q.2(b), (c) and (d) — which completes Q.2 — about seven
+  minutes.
 
 ```
 ed06_true_shape.py      episode 06: five scenes, all the narration, all the geometry
@@ -23,6 +26,7 @@ ed08_dihedral_angle.py  episode 08: four scenes
 ed09_skew_lines.py      episode 09: five scenes
 ed10_development.py     episode 10: five scenes  (Sheet 8)
 ed11_cone.py            episode 11: five scenes  (Sheet 8)
+ed12_prisms.py          episode 12: four scenes  (Sheet 8)
 ed_stage.py             the shared 3-D stage (HP, VP, XY, the four quadrants)
 ed_common.py            thin shim over cfd_common: narration, HUD and camera helpers
 cfd_common.py           the series infrastructure (voice, cache, loudnorm, fonts)
@@ -32,6 +36,7 @@ render_ed08.bat         renders episode 08 in running order at 1080p60
 render_ed09.bat         renders episode 09 in running order at 1080p60
 render_ed10.bat         renders episode 10 in running order at 1080p60
 render_ed11.bat         renders episode 11 in running order at 1080p60
+render_ed12.bat         renders episode 12 in running order at 1080p60
 ```
 
 ---
@@ -45,6 +50,7 @@ render_ed08.bat                              REM all four scenes
 render_ed09.bat                              REM all five scenes
 render_ed10.bat                              REM all five scenes
 render_ed11.bat                              REM all five scenes
+render_ed12.bat                              REM all four scenes
 render_ed08.bat S03                          REM just that one scene
 py -3.11 -m manim -qh ed06_true_shape.py S04_Construction
 py -3.11 -m manim -ql ed07_piercing_point.py S02_CuttingPlane   REM quick look
@@ -74,6 +80,7 @@ py -3.11 ed08_dihedral_angle.py
 py -3.11 ed09_skew_lines.py
 py -3.11 ed10_development.py
 py -3.11 ed11_cone.py
+py -3.11 ed12_prisms.py
 ```
 
 Each prints the worked solution its animation is about to draw. Episode 06:
@@ -236,6 +243,21 @@ horizontal face always is, and a half-ellipse that needs an auxiliary.
 
 Total 9:11.
 
+### Episode 12 — the four scenes
+
+The three prisms, which finishes Q.2. All three are solved by one function
+and drawn by one sheet builder, so the episode works (b) in full and then
+shows (c) and (d) as variations rather than as three separate drawings.
+
+| Scene | ≈ | What it does |
+|---|---|---|
+| `S01_FoldItOut` | 1:47 | A prism is *folded* out, not rolled: each face hinges flat about the edge it shares with the last one, by α times the exterior angle, so the side lengths hold at every frame and the trace closes exactly at α = 1. Three rectangles, 120 across — the perimeter — where the cylinder had πD. |
+| `S02_SheetB` | 1:41 | Q.2(b) in full. The middle line of the front view is not a fold in the drawing but the third edge of the prism pointing at you. Three edge heights read straight off the front view — no rotation, because a vertical edge is never foreshortened there — and the tops joined with **straight** lines, since a flat face cut by a flat plane meets it in a straight line. |
+| `S03_TwoPlanes` | 2:09 | Q.2(c) and (d), and the point of the episode. Where two cutting planes meet, their line of intersection crosses a **face**, not an edge — the back face in (c), the front face in (d) — so the development needs a point there. Miss it and you draw one straight line where there should be two. A corner in the pattern where the solid has no edge at all. |
+| `S04_Recap` | 1:17 | Prisms against cylinders, and the number people get wrong: the width is the perimeter of the **base**, measured in the top view where the sides are true length. |
+
+Total 7:15.
+
 ### Stitching the clips
 
 Each scene renders to its own file under
@@ -283,6 +305,13 @@ ffmpeg -f concat -safe 0 -i list.txt -c copy ed10_development.mp4
 ```bat
 (echo file 'S01_TheCone.mp4' & echo file 'S02_TrueLength.mp4' & echo file 'S03_Sheet.mp4' & echo file 'S04_Development.mp4' & echo file 'S05_Recap.mp4') > list.txt
 ffmpeg -f concat -safe 0 -i list.txt -c copy ed11_cone.mp4
+```
+
+**Episode 12**
+
+```bat
+(echo file 'S01_FoldItOut.mp4' & echo file 'S02_SheetB.mp4' & echo file 'S03_TwoPlanes.mp4' & echo file 'S04_Recap.mp4') > list.txt
+ffmpeg -f concat -safe 0 -i list.txt -c copy ed12_prisms.mp4
 ```
 
 Suggested chapters for the descriptions. The narration is timed from a word
@@ -351,6 +380,15 @@ Episode 11, off the rendered clips (102.0 s, 128.0 s, 104.1 s, 123.0 s, 94.3 s):
 03:50  The sheet: twelve cut points, four true lengths
 05:34  The development: a sector of 139.40°
 07:37  Recap, the traps, and the pyramid
+```
+
+Episode 12, off the rendered clips (106.9 s, 101.1 s, 129.0 s, 77.1 s):
+
+```
+00:00  Folding a prism out: the perimeter, not πD
+01:47  Q.2(b): three edge heights, three straight lines
+03:28  Q.2(c) and (d): a corner where there is no edge
+05:37  Recap, and the number people get wrong
 ```
 
 ---
