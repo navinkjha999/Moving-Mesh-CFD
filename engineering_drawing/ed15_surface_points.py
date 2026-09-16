@@ -83,7 +83,7 @@ HIDE_COL = VIOLET        # anything hidden, and the wrong answer
 AUX_COL = CREAM
 
 MM = 0.030
-S3 = 0.050
+S3 = 0.072
 
 # ==========================================================================
 #  The three solids. x across the sheet, y depth (negative = in front of the
@@ -228,8 +228,11 @@ def solve():
     # ---- b : given in the TOP view, unbracketed -----------------------------
     # Two generators cross this plan point, so two heights. Unbracketed means
     # the one you can SEE from above, which is the higher.
-    cands = cyl_from_tv(15.0, 16.0)
+    # b goes on the FRONT half and c on the back: at the same depth their plans
+    # are 3 mm apart on the sheet and merge into one blot
+    cands = cyl_from_tv(15.0, -16.0)
     assert len(cands) == 2, "b was meant to be the ambiguous one"
+    assert cands[0]["p"][1] < 0.0, "b should be on the near half"
     P["b"] = dict(solid="cyl", given="tv", tag=("b′", "b"), hidden_tv=False,
                   other=cands[1]["p"],
                   note="two generators run through that plan point - unbracketed "
@@ -326,17 +329,17 @@ def cone_3d(apex, R, fill=0.20, n=48, **kw):
     return g
 
 
-def ground_3d(R=34.0, **kw):
-    return ring_3d((0, 0, 0), R, colour=MUTED, width=1.4, **kw).set_stroke(opacity=0.35)
-
-
 # ==========================================================================
 #  S01 - what episode 13's two helper lines do when the axis leans
 # ==========================================================================
 class S01_WhatMoves(ThreeDScene):
     def construct(self):
         self.camera.background_color = NAVY
-        self.set_camera_orientation(phi=70 * DEGREES, theta=-62 * DEGREES,
+        # nearly front-on, and from the LEFT: the generator this beat follows is
+        # on the left of the base circle - that is the only side whose plan moves
+        # inwards when the axis leans - so the camera has to be on that side of
+        # the solid or the whole demonstration happens round the back
+        self.set_camera_orientation(phi=68 * DEGREES, theta=-102 * DEGREES,
                                     zoom=1.0, focal_distance=150.0)
         bar = hud(self, title_bar("Points on an Oblique Solid",
                                   "Sheet 8 · §10 · both helper lines survive the lean"))
@@ -344,19 +347,21 @@ class S01_WhatMoves(ThreeDScene):
 
         R = CYL_R
         up = np.array([0.0, 0.0, CYL["axis"]])
-        th, t = math.radians(200.0), 0.70
+        th, t = math.radians(196.0), 0.70
         base = np.array([R * math.cos(th), R * math.sin(th), 0.0])
 
         # ---- the right cylinder ----------------------------------------------
         tube = tube_3d(up, R)
         rims = VGroup(ring_3d((0, 0, 0), R), ring_3d(up, R))
-        gen = Line(pt3(base), pt3(base + up), color=HELP_COL, stroke_width=4)
+        gen = Line(pt3(base), pt3(base + up), color=HELP_COL, stroke_width=5)
         q = Dot3D(pt3(base + t * up), radius=0.075, color=PT_COL)
         drop = DashedLine(pt3(base + t * up), pt3(base), color=AUX_COL,
                           stroke_width=1.6, dash_length=0.07)
         plan = Dot3D(pt3(base), radius=0.065, color=PT_COL)
-        right_tag = billboard(self, mono("its plan is ON the circle", color=PT_COL, size=19)
-                              .move_to(pt3((base[0] - 6, base[1] - 26, -16))))
+        # these two go in the frame's own corner, not in the scene: anywhere in
+        # 3-D that reads as "below the solid" projects onto the base rim
+        right_tag = hud(self, mono("its plan is ON the circle", color=PT_COL, size=20)
+                        .to_corner(DOWN + LEFT, buff=0.7))
 
         narrate(
             self,
@@ -380,7 +385,7 @@ class S01_WhatMoves(ThreeDScene):
         # ---- lean it ----------------------------------------------------------
         new_tube = tube_3d(CYL_AX, R)
         new_rims = VGroup(ring_3d((0, 0, 0), R), ring_3d(CYL_AX, R))
-        new_gen = Line(pt3(base), pt3(base + CYL_AX), color=HELP_COL, stroke_width=4)
+        new_gen = Line(pt3(base), pt3(base + CYL_AX), color=HELP_COL, stroke_width=5)
         moved = base + t * CYL_AX
         new_q = Dot3D(pt3(moved), radius=0.075, color=PT_COL)
         new_drop = DashedLine(pt3(moved), pt3((moved[0], moved[1], 0.0)),
@@ -398,9 +403,9 @@ class S01_WhatMoves(ThreeDScene):
             rate_func=rate_functions.ease_in_out_sine,
         )
         r_plan = math.hypot(moved[0], moved[1])
-        lean_tag = billboard(self, mono(f"its plan is now {r_plan:.2f} from the centre "
-                                        f"- the radius is {R:.0f}", color=PT_COL, size=19)
-                             .move_to(pt3((moved[0] - 4, moved[1] - 28, -16))))
+        lean_tag = hud(self, mono(f"its plan is now {r_plan:.2f} from the centre",
+                                  color=PT_COL, size=20)
+                       .to_corner(DOWN + LEFT, buff=0.7))
         narrate(
             self,
             f"But look where the point's plan went. It was on the circle, twenty from "
@@ -411,7 +416,7 @@ class S01_WhatMoves(ThreeDScene):
         )
         warn = hud(self, chip("so the depth NEVER comes off the base circle at the "
                               "point's own x", color=HIDE_COL, size=19)
-                   .to_edge(DOWN, buff=0.55))
+                   .to_edge(DOWN, buff=1.35))
         narrate(
             self,
             "Which kills the shortcut. On a right cylinder you could read a depth "
@@ -579,7 +584,7 @@ class S02_ObliqueCylinder(MovingCameraScene):
             DoubleArrow(tv(-R, 0), tv(R, 0), buff=0, color=SLATE, stroke_width=1.6,
                         tip_length=0.09),
             mono("Ø40", color=SLATE, size=12).move_to(tv(-R - 14, 0)),
-            dim(fv(0, 0), fv(ax[0], ax[2]), "60", SLATE, offset=0.0, gap=14.0, size=12),
+            dim(fv(0, 0), fv(ax[0], ax[2]), "60", SLATE, offset=0.0, gap=22.0, size=12),
             Arc(radius=0.34, start_angle=0, angle=math.radians(CYL["lean"]),
                 arc_center=fv(0, 0), color=SLATE, stroke_width=1.6),
             mono("60°", color=SLATE, size=12).move_to(fv(16, 4)),
@@ -635,7 +640,7 @@ class S02_ObliqueCylinder(MovingCameraScene):
         foot = VGroup(
             Dot(fv(xb, 0), radius=0.038, color=HELP_COL),
             Line(fv(xb, 0), fv(xb, -3), color=MUTED, stroke_width=1.0),
-            mono(f"{xb:.2f}", color=HELP_COL, size=12).move_to(fv(xb, -7)),
+            mono(f"{xb:.2f}", color=HELP_COL, size=12).move_to(fv(xb, -5)),
         )
         drop_base = DashedLine(fv(xb, 0), tv(xb, -R - 4), color=AUX_COL,
                                stroke_width=1.1, stroke_opacity=0.55, dash_length=0.05)
@@ -644,12 +649,12 @@ class S02_ObliqueCylinder(MovingCameraScene):
             Dot(tv(xb, -ya), radius=0.034, color=HIDE_COL),
         )
         hit_tags = VGroup(
-            mono(f"{abs(ya):.2f}", color=HELP_COL, size=12).move_to(tv(xb - 9, ya - 4)),
-            mono("(far half)", color=HIDE_COL, size=11).move_to(tv(xb + 12, -ya + 4)),
+            mono(f"{abs(ya):.2f}", color=HELP_COL, size=12).move_to(tv(-16, -26)),
+            mono("(far half)", color=HIDE_COL, size=11).move_to(tv(xb, 27)),
         )
         a_gen_tv = gen_tv(xb, ya)
         a_tv = Dot(tv(30, ya), radius=0.045, color=PT_COL)
-        a_tv_tag = mono("a", color=PT_COL, size=15).move_to(tv(34, ya - 5))
+        a_tv_tag = mono("a", color=PT_COL, size=15).move_to(tv(38, -25))
         a_align = DashedLine(fv(30, 32), tv(30, ya), color=AUX_COL, stroke_width=1.1,
                              stroke_opacity=0.55, dash_length=0.05)
 
@@ -702,7 +707,7 @@ class S02_ObliqueCylinder(MovingCameraScene):
             chip("at x = 30 the base circle is not there at all — it stops at 20",
                  color=HIDE_COL, size=16),
         ).arrange(DOWN, buff=0.14))
-        wrong.move_to(P2(30, -96))
+        wrong.move_to(P2(100, 18))
         narrate(
             self,
             "And now the mistake this whole sheet exists to catch. On a right cylinder "
@@ -720,28 +725,29 @@ class S02_ObliqueCylinder(MovingCameraScene):
         gens_tv = VGroup(gen_tv(xb_hi, y16, width=2.2), gen_tv(xb_lo, y16, width=2.2))
         gens_fv = VGroup(gen_fv(xb_hi, width=2.2), gen_fv(xb_lo, width=2.2))
         b_tv = Dot(tv(15, y16), radius=0.045, color=PT_COL)
-        b_tv_tag = mono("b", color=PT_COL, size=15).move_to(tv(16, y16 + 8))
+        b_tv_tag = mono("b", color=PT_COL, size=15).move_to(tv(17, -26))
         b_hi = Dot(fv(15, B["p"][2]), radius=0.045, color=PT_COL)
         b_lo = Dot(fv(15, B["other"][2]), radius=0.036, color=HIDE_COL)
-        b_hi_tag = mono("b′", color=PT_COL, size=15).move_to(fv(22, B["p"][2]))
-        b_lo_tag = mono("rejected", color=HIDE_COL, size=11).move_to(fv(30, B["other"][2] - 1))
+        b_hi_tag = mono("b′", color=PT_COL, size=15).move_to(fv(23, 48))
+        b_lo_tag = mono("rejected", color=HIDE_COL, size=11).move_to(fv(32, 7))
         b_rise = DashedLine(tv(15, y16), fv(15, B["p"][2]), color=AUX_COL,
                             stroke_width=1.1, stroke_opacity=0.5, dash_length=0.05)
 
         narrate(
             self,
             "Point b is given the other way round - in the top view, fifteen across "
-            "and sixteen behind the centre line. On a right cylinder a top view fixes "
+            "and sixteen in front of the centre line. On a right cylinder a top view fixes "
             "nothing, because every point of a generator has the same plan. Here it "
             "fixes almost everything.",
             look_at(self, [views], right=0.28),
-            FadeOut(VGroup(drop_base, hits, hit_tags, a_align, givens)),
+            FadeOut(VGroup(drop_base, hits, hit_tags, a_align, givens, foot,
+                           a_gen_fv, wrong)),
             FadeIn(b_tv), FadeIn(b_tv_tag),
             lag_ratio=0.18,
         )
         narrate(
             self,
-            "At sixteen back, the base circle is twelve either side of the centre. So "
+            "At sixteen in front, the base circle is twelve either side of the centre. So "
             "two generators run through b's plan - the one starting at minus twelve "
             "and the one starting at plus twelve - and no others. Two candidates, not "
             "a whole generator's worth.",
@@ -761,11 +767,12 @@ class S02_ObliqueCylinder(MovingCameraScene):
         # ---- (c) : bracketed, and sitting on the base circle ------------------
         C = P["c"]
         c_tv = Dot(tv(12, 16), radius=0.045, color=HIDE_COL)
-        c_tv_tag = mono("(c)", color=HIDE_COL, size=15).move_to(tv(3, 22))
+        c_tv_tag = mono("(c)", color=HIDE_COL, size=15).move_to(tv(6, 26))
         c_lo = Dot(fv(12, 0), radius=0.045, color=HIDE_COL)
         c_hi = Dot(fv(12, C["other"][2]), radius=0.036, color=MUTED)
-        c_lo_tag = mono("(c′)", color=HIDE_COL, size=14).move_to(fv(6, 6))
-        c_hi_tag = mono("rejected", color=MUTED, size=11).move_to(fv(24, C["other"][2] + 5))
+        c_lo_tag = mono("(c′)", color=HIDE_COL, size=14).move_to(fv(12, -6))
+        c_hi_tag = mono("rejected", color=MUTED, size=11).move_to(fv(0, 44))
+        c_gens_tv = VGroup(gen_tv(-12.0, 16.0, width=2.2), gen_tv(12.0, 16.0, width=2.2))
         c_rise = DashedLine(tv(12, 16), fv(12, 0), color=AUX_COL, stroke_width=1.1,
                             stroke_opacity=0.5, dash_length=0.05)
 
@@ -783,7 +790,7 @@ class S02_ObliqueCylinder(MovingCameraScene):
             f"candidate really is on the base. The other arrives {C['other'][2]:.2f} "
             "up, and from above that is the one you would see. Being on the base "
             "circle in plan does not put a point on the base.",
-            Create(c_rise), FadeIn(c_hi), FadeIn(c_hi_tag),
+            Create(c_gens_tv), Create(c_rise), FadeIn(c_hi), FadeIn(c_hi_tag),
             lag_ratio=0.2,
         )
         narrate(
@@ -796,14 +803,14 @@ class S02_ObliqueCylinder(MovingCameraScene):
         )
 
         summary = card_back(VGroup(
-            mono(f"a   given a′({30:.0f}, {32:.0f})   →   a ({30:.0f}, {ya:+.2f})"
-                 f"      generator from x = {xb:.2f}", color=PT_COL, size=14),
-            mono(f"b   given b ({15:.0f}, {y16:+.0f})    →   b′ at z = {B['p'][2]:.2f}"
-                 f"        the upper of two", color=PT_COL, size=14),
-            mono(f"c   given (c)({12:.0f}, {16:.0f})    →   (c′) at z = "
-                 f"{C['p'][2]:.2f}          the lower of two", color=HIDE_COL, size=14),
+            mono(f"a   a′(30, 32)   →  a (30, {ya:+.2f})    generator starts at "
+                 f"{xb:.2f}", color=PT_COL, size=14),
+            mono(f"b   b (15, -16)  →  b′ z = {B['p'][2]:.2f}       upper of two, "
+                 f"unbracketed", color=PT_COL, size=14),
+            mono(f"c   (c)(12, 16)  →  (c′) z = {C['p'][2]:.2f}       lower of two, "
+                 f"bracketed", color=HIDE_COL, size=14),
         ).arrange(DOWN, buff=0.12, aligned_edge=LEFT))
-        summary.move_to(P2(15, -96))
+        summary.move_to(P2(15, -98))
         narrate(
             self,
             "Three points, three different questions, one construction: find the "
@@ -888,8 +895,8 @@ class S03_ConeAndPyramid(MovingCameraScene):
             Dot(fvx(0, cx_d, z_d), radius=0.034, color=HELP_COL),
             Dot(tvx(0, cx_d, 0), radius=0.034, color=HELP_COL),
         )
-        level_tag = mono(f"R {r_d:.2f}  ·  centre {cx_d:.2f} along the axis",
-                         color=HELP_COL, size=12).move_to(tvx(0, 4, -32))
+        level_tag = mono(f"level circle R {r_d:.2f}  ·  centre {cx_d:.2f}",
+                         color=HELP_COL, size=12).move_to(tvx(0, 0, -31))
 
         d_fv = Dot(fvx(0, 10, z_d), radius=0.045, color=PT_COL)
         d_fv_tag = mono("d′", color=PT_COL, size=15).move_to(fvx(0, 5, z_d + 5))
@@ -897,9 +904,9 @@ class S03_ConeAndPyramid(MovingCameraScene):
                             stroke_width=1.1, stroke_opacity=0.55, dash_length=0.05)
         d_tv = Dot(tvx(0, 10, D["p"][1]), radius=0.045, color=PT_COL)
         d_far = Dot(tvx(0, 10, -D["p"][1]), radius=0.034, color=HIDE_COL)
-        d_tv_tag = mono("d", color=PT_COL, size=15).move_to(tvx(0, 4, D["p"][1] - 5))
-        d_depth = mono(f"{abs(D['p'][1]):.2f}", color=PT_COL, size=12).move_to(
-            tvx(0, 20, D["p"][1] + 2))
+        d_tv_tag = mono("d", color=PT_COL, size=15).move_to(tvx(0, 5, -16))
+        d_depth = mono(f"{abs(D['p'][1]):.2f} deep", color=PT_COL, size=12).move_to(
+            tvx(0, -8, -25))
 
         gen_line_fv = Line(fvx(0, CONE_AX[0], CONE_AX[2]), fvx(0, D["base"][0], 0),
                            color=GOLD, stroke_width=2.2)
@@ -917,7 +924,12 @@ class S03_ConeAndPyramid(MovingCameraScene):
             corner=UP + LEFT, buff=0.30)
         self.add(bar)
         self.add_foreground_mobjects(bar)
-        centre, W = frame_target([cone_all], right=0.26)
+        # everything the cone half will draw, framed once: a camera fitted to the
+        # bare views alone leaves the level-circle tag off the bottom of the screen
+        cone_sheet = VGroup(cone_all, level_fv, level_tv, level_tag, d_fv, d_fv_tag,
+                            d_tv, d_far, d_tv_tag, d_depth, gen_line_fv, gen_line_tv,
+                            gen_base_tv)
+        centre, W = frame_target([cone_sheet], right=0.10, top=0.14)
         self.camera.frame.set(width=W).move_to(centre)
 
         narrate(
@@ -973,8 +985,8 @@ class S03_ConeAndPyramid(MovingCameraScene):
         lvl_tv = Polygon(tvx(PYR_X0, cx_e - hd_e, 0), tvx(PYR_X0, cx_e, -hd_e),
                          tvx(PYR_X0, cx_e + hd_e, 0), tvx(PYR_X0, cx_e, hd_e),
                          color=HELP_COL, stroke_width=3.2)
-        lvl_tag = mono(f"half-diagonal {hd_e:.2f}  ·  centre {cx_e:.2f} along the axis",
-                       color=HELP_COL, size=12).move_to(tvx(PYR_X0, 8, -34))
+        lvl_tag = mono(f"level square {hd_e:.2f}  ·  centre {cx_e:.2f}",
+                       color=HELP_COL, size=12).move_to(tvx(PYR_X0, 6, -31))
         e_fv = Dot(fvx(PYR_X0, 16, z_e), radius=0.045, color=PT_COL)
         e_fv_tag = mono("e′", color=PT_COL, size=15).move_to(fvx(PYR_X0, 21, z_e + 5))
         e_drop = DashedLine(fvx(PYR_X0, 16, z_e), tvx(PYR_X0, 16, -hd_e - 4),
@@ -982,14 +994,16 @@ class S03_ConeAndPyramid(MovingCameraScene):
                             dash_length=0.05)
         e_tv = Dot(tvx(PYR_X0, 16, E["p"][1]), radius=0.045, color=PT_COL)
         e_far = Dot(tvx(PYR_X0, 16, -E["p"][1]), radius=0.034, color=HIDE_COL)
-        e_tv_tag = mono("e", color=PT_COL, size=15).move_to(tvx(PYR_X0, 22, E["p"][1] - 4))
+        e_tv_tag = mono("e", color=PT_COL, size=15).move_to(tvx(PYR_X0, 24, -18))
+        pyr_sheet = VGroup(pyr_all, lvl_fv, lvl_tv, lvl_tag, e_fv, e_fv_tag, e_tv,
+                           e_far, e_tv_tag)
 
         narrate(
             self,
             "The pyramid is the same idea with corners. Base thirty-five square on its "
             "diagonals, apex ten past the right-hand corner - Q.3's pyramid again.",
-            look_at(self, [pyr_all], right=0.26),
-            Create(pyr_all),
+            look_at(self, [pyr_sheet], right=0.10, top=0.14),
+            FadeOut(cone_sheet), Create(pyr_all),
             lag_ratio=0.2,
         )
         narrate(
@@ -1063,9 +1077,9 @@ class S04_Recap(MovingCameraScene):
             mono("point   given            answer              because", color=SLATE, size=14),
             mono(f"a       a′ (30, 32)      a  (30, {A['p'][1]:+.2f})      "
                  f"generator starts at {A['x_base']:.2f}", color=PT_COL, size=14),
-            mono(f"b       b  (15, +16)     b′ at z = {B['p'][2]:.2f}     "
+            mono(f"b       b  (15, {B['p'][1]:+.0f})     b′ at z = {B['p'][2]:.2f}     "
                  f"upper of two — unbracketed", color=PT_COL, size=14),
-            mono(f"c       (c) (12, +16)    (c′) at z = {C['p'][2]:.2f}      "
+            mono(f"c       (c) (12, {C['p'][1]:+.0f})    (c′) at z = {C['p'][2]:.2f}      "
                  f"lower of two — bracketed", color=HIDE_COL, size=14),
             mono(f"d       d′ (10, 24)      d  (10, {P['d']['p'][1]:+.2f})      "
                  f"level circle R {P['d']['r']:.2f} at {P['d']['cx']:.2f}",
