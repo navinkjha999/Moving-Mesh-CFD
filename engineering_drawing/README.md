@@ -1,6 +1,6 @@
 # Engineering Drawing I — Sheet 4, *Basic Descriptive Geometry II*
 
-Manim CE 0.20.1 source for nine YouTube lessons:
+Manim CE 0.20.1 source for ten YouTube lessons:
 
 * **Episode 06 — Edge View, True Shape and True Size of an Oblique Plane**
   (Exercise 4, Set A, Q.6), about eleven minutes.
@@ -23,6 +23,9 @@ Manim CE 0.20.1 source for nine YouTube lessons:
 * **Episode 14 — Oblique Solids: Development by Triangulation** (Sheet 8, §10):
   Exercise 8 (Set A) Q.3(a) and Q.3(b) — an oblique cone and an oblique
   pyramid, both cut — about twelve minutes.
+* **Episode 15 — Points on the Surface of an Oblique Solid** (Sheet 8, §10):
+  Exercise 8 (Set A) Q.1 — the same two helper lines as episode 13, drawn where
+  the solid has actually gone — about nine and a half minutes.
 
 ```
 ed06_true_shape.py      episode 06: five scenes, all the narration, all the geometry
@@ -34,6 +37,7 @@ ed11_cone.py            episode 11: five scenes  (Sheet 8)
 ed12_prisms.py          episode 12: four scenes  (Sheet 8)
 ed13_points.py          episode 13: four scenes  (Sheet 8)
 ed14_oblique.py         episode 14: five scenes  (Sheet 8)
+ed15_surface_points.py  episode 15: four scenes  (Sheet 8)
 ed_stage.py             the shared 3-D stage (HP, VP, XY, the four quadrants)
 ed_common.py            thin shim over cfd_common: narration, HUD and camera helpers
 cfd_common.py           the series infrastructure (voice, cache, loudnorm, fonts)
@@ -46,6 +50,7 @@ render_ed11.bat         renders episode 11 in running order at 1080p60
 render_ed12.bat         renders episode 12 in running order at 1080p60
 render_ed13.bat         renders episode 13 in running order at 1080p60
 render_ed14.bat         renders episode 14 in running order at 1080p60
+render_ed15.bat         renders episode 15 in running order at 1080p60
 ```
 
 ---
@@ -62,6 +67,7 @@ render_ed11.bat                              REM all five scenes
 render_ed12.bat                              REM all four scenes
 render_ed13.bat                              REM all four scenes
 render_ed14.bat                              REM all five scenes
+render_ed15.bat                              REM all four scenes
 render_ed08.bat S03                          REM just that one scene
 py -3.11 -m manim -qh ed06_true_shape.py S04_Construction
 py -3.11 -m manim -ql ed07_piercing_point.py S02_CuttingPlane   REM quick look
@@ -320,6 +326,34 @@ sideways onto its own hypotenuse.
 
 Total 11:26.
 
+### Episode 15 — the four scenes
+
+Exercise 8 (Set A) Q.1. Episode 13 gave two helper lines for finding a point on
+a solid's surface — a **generator** where the sides run straight up, a **level
+section** where the solid tapers. Both survive the axis leaning over; neither
+stays where it was, and that is the whole episode.
+
+| what | on a right solid | on an oblique one |
+|---|---|---|
+| the generator | vertical, so its plan is one point *on the base circle* | parallel to the **axis**, so its plan is a **line** 30 long |
+| a surface point's depth | read off the base circle at the point's own x | read off the base circle where its **generator starts** |
+| the level section | the base figure shrunk, concentric with the base | the base figure shrunk, **slid along the axis** |
+
+Figure P8.1(a) is the book's solid — an oblique cylinder, Ø40, axis 60 long at
+60°. Its lettered points were not available, so a, b and c exercise one rule
+each. Parts (b) to (d) are stood in for by the oblique cone and the oblique
+pyramid of Q.3, whose dimensions are the figure's and which episode 14 already
+develops.
+
+| Scene | ≈ | What it does |
+|---|---|---|
+| `S01_WhatMoves` | 2:15 | In space, both helper lines before and after the lean. A point 0.7 of the way up one generator has its plan **on** the base circle while the cylinder is right; lean the axis and the same point's plan is 5.79 from the centre of a circle of radius 20 — most of the way in towards the middle. Then the level section: still a circle, still the same size for its height, but its centre has gone along the axis. |
+| `S02_ObliqueCylinder` | 4:00 | Q.1(a) in full. **a′** given in the front view: its generator runs back to the base at 11.52, and the depth comes off the circle *there* — at a′'s own x of 30 the base circle is not there at all, it stopped at 20. **b** given in the top view: exactly two generators cross that plan point, so two heights, 46.77 and 5.20, and unbracketed takes the upper. **(c)** sits *on* the base circle in plan and still is not a base point until the bracket says so. |
+| `S03_ConeAndPyramid` | 2:02 | The tapering pair. The oblique cone's level circle at 24 up is R 11.30 centred 13.86 *along the axis* — the size a right cone would give, in the place the lean put it. Then the check that costs one line: apex to d′, down to the base, depth off the base circle, back up to the apex in plan — the generator runs straight through d. The pyramid is the same with corners, where the depth is a subtraction rather than a square root. |
+| `S04_Recap` | 1:07 | Two columns — what episode 13 still gives you, and the three things the lean moves — and the five points with the reason each came out as it did. |
+
+Total 9:25.
+
 ### Stitching the clips
 
 Each scene renders to its own file under
@@ -388,6 +422,13 @@ ffmpeg -f concat -safe 0 -i list.txt -c copy ed13_points.mp4
 ```bat
 (echo file 'S01_WhatIsOblique.mp4' & echo file 'S02_Triangulation.mp4' & echo file 'S03_SheetB.mp4' & echo file 'S04_DevelopmentB.mp4' & echo file 'S05_ConeAndRecap.mp4') > list.txt
 ffmpeg -f concat -safe 0 -i list.txt -c copy ed14_oblique.mp4
+```
+
+**Episode 15**
+
+```bat
+(echo file 'S01_WhatMoves.mp4' & echo file 'S02_ObliqueCylinder.mp4' & echo file 'S03_ConeAndPyramid.mp4' & echo file 'S04_Recap.mp4') > list.txt
+ffmpeg -f concat -safe 0 -i list.txt -c copy ed15_surface_points.mp4
 ```
 
 Suggested chapters for the descriptions. The narration is timed from a word
@@ -484,6 +525,15 @@ Episode 14, off the rendered clips (96.0 s, 105.6 s, 154.1 s, 141.7 s, 188.1 s):
 03:21  Q.3(b): the cut, the four points, and the true shape
 05:55  Q.3(b): the development, and where the cut really falls
 08:17  Q.3(a): the oblique cone, and the recap
+```
+
+Episode 15, off the rendered clips (135.2 s, 240.6 s, 122.3 s, 67.3 s):
+
+```
+00:00  Both helper lines, before and after the lean
+02:15  Q.1(a): the generator, and the depth that is not where you look
+06:16  The cone and the pyramid: the section slides along the axis
+08:18  Recap: what moved, what did not, and all five points
 ```
 
 ---

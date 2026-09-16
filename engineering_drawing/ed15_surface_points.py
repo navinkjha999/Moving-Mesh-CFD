@@ -414,9 +414,12 @@ class S01_WhatMoves(ThreeDScene):
             "lands nowhere near the rim.",
             FadeIn(lean_tag),
         )
-        warn = hud(self, chip("so the depth NEVER comes off the base circle at the "
-                              "point's own x", color=HIDE_COL, size=19)
-                   .to_edge(DOWN, buff=1.35))
+        # the bottom edge of the frame is where the base rim lands at this camera
+        # angle, so the warning goes in the empty top-right instead
+        warn = hud(self, VGroup(
+            chip("the depth NEVER comes off the base circle", color=HIDE_COL, size=17),
+            chip("at the point's own x", color=HIDE_COL, size=17),
+        ).arrange(DOWN, buff=0.14).to_corner(UP + RIGHT, buff=0.55))
         narrate(
             self,
             "Which kills the shortcut. On a right cylinder you could read a depth "
@@ -926,9 +929,9 @@ class S03_ConeAndPyramid(MovingCameraScene):
         self.add_foreground_mobjects(bar)
         # everything the cone half will draw, framed once: a camera fitted to the
         # bare views alone leaves the level-circle tag off the bottom of the screen
-        cone_sheet = VGroup(cone_all, level_fv, level_tv, level_tag, d_fv, d_fv_tag,
-                            d_tv, d_far, d_tv_tag, d_depth, gen_line_fv, gen_line_tv,
-                            gen_base_tv)
+        cone_sheet = VGroup(cone_all, level_fv, level_tv, level_tag, axis_mark,
+                            d_fv, d_fv_tag, d_drop, d_tv, d_far, d_tv_tag, d_depth,
+                            gen_line_fv, gen_line_tv, gen_base_tv)
         centre, W = frame_target([cone_sheet], right=0.10, top=0.14)
         self.camera.frame.set(width=W).move_to(centre)
 
