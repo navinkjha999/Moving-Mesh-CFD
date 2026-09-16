@@ -1,6 +1,6 @@
 # Engineering Drawing I — Sheet 4, *Basic Descriptive Geometry II*
 
-Manim CE 0.20.1 source for eight YouTube lessons:
+Manim CE 0.20.1 source for nine YouTube lessons:
 
 * **Episode 06 — Edge View, True Shape and True Size of an Oblique Plane**
   (Exercise 4, Set A, Q.6), about eleven minutes.
@@ -20,6 +20,9 @@ Manim CE 0.20.1 source for eight YouTube lessons:
   minutes.
 * **Episode 13 — Points on the Surface of a Solid** (Sheet 8, §6):
   Exercise 7 (Set A) Q.1 — which completes the exercise — about nine minutes.
+* **Episode 14 — Oblique Solids: Development by Triangulation** (Sheet 8, §10):
+  Exercise 8 (Set A) Q.3(a) and Q.3(b) — an oblique cone and an oblique
+  pyramid, both cut — about twelve minutes.
 
 ```
 ed06_true_shape.py      episode 06: five scenes, all the narration, all the geometry
@@ -30,6 +33,7 @@ ed10_development.py     episode 10: five scenes  (Sheet 8)
 ed11_cone.py            episode 11: five scenes  (Sheet 8)
 ed12_prisms.py          episode 12: four scenes  (Sheet 8)
 ed13_points.py          episode 13: four scenes  (Sheet 8)
+ed14_oblique.py         episode 14: five scenes  (Sheet 8)
 ed_stage.py             the shared 3-D stage (HP, VP, XY, the four quadrants)
 ed_common.py            thin shim over cfd_common: narration, HUD and camera helpers
 cfd_common.py           the series infrastructure (voice, cache, loudnorm, fonts)
@@ -41,6 +45,7 @@ render_ed10.bat         renders episode 10 in running order at 1080p60
 render_ed11.bat         renders episode 11 in running order at 1080p60
 render_ed12.bat         renders episode 12 in running order at 1080p60
 render_ed13.bat         renders episode 13 in running order at 1080p60
+render_ed14.bat         renders episode 14 in running order at 1080p60
 ```
 
 ---
@@ -56,6 +61,7 @@ render_ed10.bat                              REM all five scenes
 render_ed11.bat                              REM all five scenes
 render_ed12.bat                              REM all four scenes
 render_ed13.bat                              REM all four scenes
+render_ed14.bat                              REM all five scenes
 render_ed08.bat S03                          REM just that one scene
 py -3.11 -m manim -qh ed06_true_shape.py S04_Construction
 py -3.11 -m manim -ql ed07_piercing_point.py S02_CuttingPlane   REM quick look
@@ -287,6 +293,33 @@ check that the handedness is right, and `solve()` asserts it.
 
 Total 9:12.
 
+### Episode 14 — the five scenes
+
+Exercise 8 (Set A) Q.3, the first of the oblique-solid questions: Q.3(b) an
+oblique square pyramid and Q.3(a) an oblique cone, each cut by a plane at 30°
+and each developed. Sheet 8 §9 did the right solids, where a cone's
+development is a sector and a pyramid's is a fan of identical triangles.
+None of that survives the apex moving sideways, and this episode is about
+what replaces it.
+
+The whole method is one idea: **a triangle with three true sides has exactly
+one shape.** Every face is a triangle, its base edge is true in the top view,
+and its two slant edges come off a single right-angled diagram — plan length
+along the bottom, height up the side, hypotenuse the true length. The cut is
+then marked not at the height the front view shows but at its own true
+distance from the apex, read off the same diagram by sliding each point
+sideways onto its own hypotenuse.
+
+| Scene | ≈ | What it does |
+|---|---|---|
+| `S01_WhatIsOblique` | 1:36 | A right pyramid in space, all four slant edges 55.79 — then the apex pushed ten past the right-hand corner, same base and same height, and the four edges come out 77.72, 65.73, 50.99, 65.73. Three lengths where there was one. No slant height, so no sector and no πD⁄L: what is left is triangulation, which never needed either. |
+| `S02_Triangulation` | 1:46 | The method, and the one construction under it. Neither view shows a slant edge true — the top view gives its plan length, the front view the height it climbs, never both, because the edge leans in two directions. Those two are the sides of a right-angled triangle whose hypotenuse is what we want, so one diagram drawn once reads off all four. |
+| `S03_SheetB` | 2:34 | Q.3(b) in full. In the front view the cutting plane is one line, and where it crosses each slant edge is a corner of the section: 6, 27, 34.43, 27 — and 2′ and 4′ fall together, because those two edges coincide in that view. Carried down to the plan, then turned square-on for the true shape, 56.86 × 22.77: widths were never foreshortened, lengths are the plan divided by cos 30°. |
+| `S04_DevelopmentB` | 2:22 | The pattern, face by face: two radii from the apex and a 35 chord fix each corner, which is a pair of compasses doing what the cosine rule does. Seam on edge 3, the shortest. Then the point of the episode — a cut point is **not** at the height you see in the front view, it is at its own true distance from the apex: 68.39, 30.23, 15.88, and the true-length diagram gives those too. |
+| `S05_ConeAndRecap` | 3:08 | Q.3(a), the oblique cone. A cone has no edges, so twelve generators stand in for the surface; on a right cone all twelve are equal, here they run 72.81 down to 52.74. Same diagram, same method, twelve triangles instead of four — and the laid-out base is a curve, not a circular arc. Plus the recap. |
+
+Total 11:26.
+
 ### Stitching the clips
 
 Each scene renders to its own file under
@@ -348,6 +381,13 @@ ffmpeg -f concat -safe 0 -i list.txt -c copy ed12_prisms.mp4
 ```bat
 (echo file 'S01_OnTheSurface.mp4' & echo file 'S02_Cylinder.mp4' & echo file 'S03_Pyramid.mp4' & echo file 'S04_Recap.mp4') > list.txt
 ffmpeg -f concat -safe 0 -i list.txt -c copy ed13_points.mp4
+```
+
+**Episode 14**
+
+```bat
+(echo file 'S01_WhatIsOblique.mp4' & echo file 'S02_Triangulation.mp4' & echo file 'S03_SheetB.mp4' & echo file 'S04_DevelopmentB.mp4' & echo file 'S05_ConeAndRecap.mp4') > list.txt
+ffmpeg -f concat -safe 0 -i list.txt -c copy ed14_oblique.mp4
 ```
 
 Suggested chapters for the descriptions. The narration is timed from a word
@@ -436,9 +476,19 @@ Episode 13, off the rendered clips (167.6 s, 161.9 s, 144.0 s, 78.3 s):
 07:54  Recap: one rule per solid, and what each view hides
 ```
 
+Episode 14, off the rendered clips (96.0 s, 105.6 s, 154.1 s, 141.7 s, 188.1 s):
+
+```
+00:00  What "oblique" costs you: three lengths where there was one
+01:36  Triangulation, and the true-length diagram
+03:21  Q.3(b): the cut, the four points, and the true shape
+05:55  Q.3(b): the development, and where the cut really falls
+08:17  Q.3(a): the oblique cone, and the recap
+```
+
 ---
 
-### Conventions the four episodes keep
+### Conventions the episodes keep
 
 * **Colour is meaning, and it never changes mid-episode.** Coral is the vertical
   plane and the front view, teal the horizontal plane and the top view, cream the
