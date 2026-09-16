@@ -1,6 +1,6 @@
 # Engineering Drawing I — Sheet 4, *Basic Descriptive Geometry II*
 
-Manim CE 0.20.1 source for ten YouTube lessons:
+Manim CE 0.20.1 source for eleven YouTube lessons:
 
 * **Episode 06 — Edge View, True Shape and True Size of an Oblique Plane**
   (Exercise 4, Set A, Q.6), about eleven minutes.
@@ -26,6 +26,9 @@ Manim CE 0.20.1 source for ten YouTube lessons:
 * **Episode 15 — Points on the Surface of an Oblique Solid** (Sheet 8, §10):
   Exercise 8 (Set A) Q.1 — the same two helper lines as episode 13, drawn where
   the solid has actually gone — about nine and a half minutes.
+* **Episode 16 — The Right Section** (Sheet 8, §10): developing an oblique
+  prism and an oblique cylinder, the one case none of episodes 10–14 covers —
+  about seven minutes.
 
 ```
 ed06_true_shape.py      episode 06: five scenes, all the narration, all the geometry
@@ -38,6 +41,7 @@ ed12_prisms.py          episode 12: four scenes  (Sheet 8)
 ed13_points.py          episode 13: four scenes  (Sheet 8)
 ed14_oblique.py         episode 14: five scenes  (Sheet 8)
 ed15_surface_points.py  episode 15: four scenes  (Sheet 8)
+ed16_right_section.py   episode 16: four scenes  (Sheet 8)
 ed_stage.py             the shared 3-D stage (HP, VP, XY, the four quadrants)
 ed_common.py            thin shim over cfd_common: narration, HUD and camera helpers
 cfd_common.py           the series infrastructure (voice, cache, loudnorm, fonts)
@@ -51,6 +55,7 @@ render_ed12.bat         renders episode 12 in running order at 1080p60
 render_ed13.bat         renders episode 13 in running order at 1080p60
 render_ed14.bat         renders episode 14 in running order at 1080p60
 render_ed15.bat         renders episode 15 in running order at 1080p60
+render_ed16.bat         renders episode 16 in running order at 1080p60
 ```
 
 ---
@@ -68,6 +73,7 @@ render_ed12.bat                              REM all four scenes
 render_ed13.bat                              REM all four scenes
 render_ed14.bat                              REM all five scenes
 render_ed15.bat                              REM all four scenes
+render_ed16.bat                              REM all four scenes
 render_ed08.bat S03                          REM just that one scene
 py -3.11 -m manim -qh ed06_true_shape.py S04_Construction
 py -3.11 -m manim -ql ed07_piercing_point.py S02_CuttingPlane   REM quick look
@@ -354,6 +360,40 @@ develops.
 
 Total 9:25.
 
+### Episode 16 — the four scenes
+
+The one empty cell in Sheet 8's matrix. Episodes 10 and 12 rolled right prisms
+and cylinders along their bases; 11 opened a right cone into a sector; 14
+triangulated oblique cones and pyramids. An oblique **prismatic** solid fits
+none of them.
+
+| solid | its generators | stretch-out line | ep. |
+|---|---|---|---|
+| right prism · cylinder | parallel **and** square to the base | the base — perimeter or πD | 10·12 |
+| right cone · pyramid | all meet the apex, all equal | a sector, 360 R/L | 11 |
+| oblique cone · pyramid | meet the apex, all different | none — triangulate face by face | 14 |
+| oblique prism · cylinder | parallel, **not** square to the base | the **right section** | 16 |
+
+A right prism rolls along its base only because the base is square to the
+generators. Lean the axis and that angle is gone — 69.3°, not 90° — so the base
+wanders off the line and its perimeter is the wrong width for the pattern. The
+cure is to make a base that *is* square to the generators: slice the solid
+perpendicular to the axis. That section, and only that section, rolls out
+straight; everything else is then measured from it, above and below, signs and
+all.
+
+The arithmetic falls out clean, because a right-section point is just the base
+point with its x foreshortened by sin(lean) and its depth untouched.
+
+| Scene | ≈ | What it does |
+|---|---|---|
+| `S01_RollItFlat` | 1:34 | In space: a base edge meets a vertical generator at 90°, which is the only reason episode 10 worked. Lean the axis and it is 69.3°. Then the right section appears, with a right-angle mark on every generator — and the aside that explains episode 10 in one line: on a right solid the base *already is* a right section, so the question never came up. |
+| `S02_ObliquePrism` | 2:35 | An oblique square prism, 30 side on its diagonals, cut at 30°. The right section's true shape is **not** a square — a rhombus 36.74 × 42.43, four sides of 28.06, giving a stretch-out of **112.25** where the base perimeter is 120. Then the pattern: the base 19.4 to 40.6 *below* the line, the top the same amounts above, the cut +33.82 at corner 3 and −29.82 at corner 1. |
+| `S03_ObliqueCylinder` | 1:43 | The book's cylinder from P8.1(a), twelve generators. The right section is an ellipse, 40 deep by 34.64 across — the diameter untouched, and the diameter times sin 60°. The twelve chords are not equal (9.07 to 10.27) and total **116.06**, against a πD of 125.66 — the number the whole method exists to stop you using. |
+| `S04_Recap` | 1:19 | The table above, and the check that saves you: on any prism or cylinder, right or oblique, base to top is the same distance on **every** generator. Here, 60. |
+
+Total 7:11.
+
 ### Stitching the clips
 
 Each scene renders to its own file under
@@ -429,6 +469,13 @@ ffmpeg -f concat -safe 0 -i list.txt -c copy ed14_oblique.mp4
 ```bat
 (echo file 'S01_WhatMoves.mp4' & echo file 'S02_ObliqueCylinder.mp4' & echo file 'S03_ConeAndPyramid.mp4' & echo file 'S04_Recap.mp4') > list.txt
 ffmpeg -f concat -safe 0 -i list.txt -c copy ed15_surface_points.mp4
+```
+
+**Episode 16**
+
+```bat
+(echo file 'S01_RollItFlat.mp4' & echo file 'S02_ObliquePrism.mp4' & echo file 'S03_ObliqueCylinder.mp4' & echo file 'S04_Recap.mp4') > list.txt
+ffmpeg -f concat -safe 0 -i list.txt -c copy ed16_right_section.mp4
 ```
 
 Suggested chapters for the descriptions. The narration is timed from a word
@@ -534,6 +581,15 @@ Episode 15, off the rendered clips (135.2 s, 240.6 s, 122.3 s, 67.3 s):
 02:15  Q.1(a): the generator, and the depth that is not where you look
 06:16  The cone and the pyramid: the section slides along the axis
 08:18  Recap: what moved, what did not, and all five points
+```
+
+Episode 16, off the rendered clips (94.3 s, 155.0 s, 103.3 s, 78.5 s):
+
+```
+00:00  Why rolling an oblique prism on its base fails
+01:34  The prism: right section, true shape, stretch-out
+04:09  The cylinder: an elliptical right section, and πD is wrong
+05:52  Four solids, four patterns — and the check
 ```
 
 ---

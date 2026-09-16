@@ -266,7 +266,7 @@ class S01_RollItFlat(ThreeDScene):
         solid = prism_3d(base, up)
         rims = VGroup(ring_3d(base), ring_3d([p + up for p in base]))
         gens = gens_3d(base, up)
-        mark = sq_mark(corner, edge, up, colour=RS_COL)
+        mark = sq_mark(corner, edge, up, size=7.5, colour=RS_COL, width=3.0)
         base_hi = ring_3d(base, colour=RS_COL, width=5)
 
         narrate(
@@ -291,7 +291,7 @@ class S01_RollItFlat(ThreeDScene):
         new_solid = prism_3d(base, A)
         new_rims = VGroup(ring_3d(base), ring_3d([p + A for p in base]))
         new_gens = gens_3d(base, A)
-        new_mark = sq_mark(corner, edge, A, colour=CUT_COL)
+        new_mark = sq_mark(corner, edge, A, size=7.5, colour=CUT_COL, width=3.0)
         narrate(
             self,
             "Now lean the axis over to sixty degrees. The base has not moved, the "
@@ -302,12 +302,13 @@ class S01_RollItFlat(ThreeDScene):
             FadeOut(base_hi),
             rate_func=rate_functions.ease_in_out_sine,
         )
+        # top right is where the title bar's subtitle ends up; these go low
         warn = hud(self, VGroup(
-            chip("roll it now and the base does NOT come out straight",
+            chip("roll it now and the base does NOT lie straight",
                  color=CUT_COL, size=18),
-            chip("the perimeter of the base is the wrong stretch-out",
+            chip("the base's perimeter is the wrong stretch-out",
                  color=CUT_COL, size=18),
-        ).arrange(DOWN, buff=0.14).to_corner(UP + RIGHT, buff=0.55))
+        ).arrange(DOWN, buff=0.14).to_corner(DOWN + RIGHT, buff=0.55))
         narrate(
             self,
             "So rolling it no longer works. The base wanders off the line, and its "
@@ -489,7 +490,7 @@ class S02_ObliquePrism(MovingCameraScene):
         views = VGroup(fv_out, tv_out)
 
         givens = VGroup(
-            dim(fv(0, 0), fv(A[0], A[2]), f"{AXIS:.0f}", SLATE, offset=0.0, gap=22.0, size=12),
+            dim(fv(0, 0), fv(A[0], A[2]), f"{AXIS:.0f}", SLATE, offset=0.0, gap=30.0, size=12),
             Arc(radius=0.34, start_angle=0, angle=math.radians(LEAN),
                 arc_center=fv(0, 0), color=SLATE, stroke_width=1.6),
             mono(f"{LEAN:.0f}°", color=SLATE, size=12).move_to(fv(17, 4)),
@@ -498,7 +499,7 @@ class S02_ObliquePrism(MovingCameraScene):
         )
         # the top face's plan sits right over corner 3, so that one number goes
         # into the clear wedge inside it rather than radially out
-        tag_at = {0: (-30.0, 0.0), 1: (0.0, -28.5), 2: (24.0, 6.0), 3: (0.0, 28.5)}
+        tag_at = {0: (-30.0, 0.0), 1: (0.0, -28.5), 2: (25.2, -8.0), 3: (0.0, 28.5)}
         corner_tags = VGroup(*[
             mono(str(k + 1), color=SOLID_COL, size=13).move_to(tv(*tag_at[k]))
             for k in range(4)])
@@ -512,14 +513,16 @@ class S02_ObliquePrism(MovingCameraScene):
         ang_tag = mono(f"{TILT:.0f}°", color=CUT_COL, size=12).move_to(
             fv(CUT_P0[0] + 17, CUT_P0[2] + 3))
         cut_tag = mono(f"{CUT_AT:.0f} along the axis", color=CUT_COL, size=12).move_to(
-            fv(-6, 52))
-        cut_lead = Line(fv(CUT_P0[0], CUT_P0[2]), fv(2, 49), color=MUTED, stroke_width=1.0)
+            fv(64, 34))
+        # stop the leader short of the tag's own left edge, or it pokes into it
+        cut_lead = Line(fv(40, CUT_P0[2] + 24 * math.tan(math.radians(TILT))),
+                        fv(47, 37), color=MUTED, stroke_width=1.0)
 
         # ---- the right section ------------------------------------------------
         rs_line = Line(rs_fv(-31), rs_fv(31), color=RS_COL, stroke_width=4.2)
         rs_dots = VGroup(*[Dot(fv_of(g["rs"]), radius=0.038, color=RS_COL) for g in G])
         rs_mark = sq_mark2(fv(C_FV[0], C_FV[1]), U_DIR, AX_DIR, colour=RS_COL, width=2.2)
-        rs_tag = mono("right section ⟂ axis", color=RS_COL, size=13).move_to(rs_fv(-42))
+        rs_tag = mono("right section ⟂ axis", color=RS_COL, size=13).move_to(rs_fv(-48))
 
         # ---- the auxiliary view -----------------------------------------------
         projectors = VGroup(*[
@@ -539,9 +542,10 @@ class S02_ObliquePrism(MovingCameraScene):
         )
         u_full, v_full = 2 * abs(G[0]["uv"][0]), 2 * abs(G[1]["uv"][1])
         aux_cap = VGroup(
-            caption("TRUE SHAPE of the right section", color=RS_COL, size=15),
-            mono(f"{u_full:.2f} × {v_full:.2f}  ·  side {run[1]:.2f}", color=RS_COL, size=13),
-        ).arrange(DOWN, buff=0.10).move_to(P2(50, 122))
+            caption("TRUE SHAPE", color=RS_COL, size=16),
+            mono(f"{u_full:.2f} × {v_full:.2f}", color=RS_COL, size=13),
+            mono(f"side {run[1]:.2f}", color=RS_COL, size=13),
+        ).arrange(DOWN, buff=0.09).move_to(P2(93, 86))
 
         sheet_left = VGroup(xy, views, givens, corner_tags, cut_ext, cut_fv, cut_dots,
                             ang_arc, ang_tag, cut_tag, cut_lead, rs_line, rs_dots,
@@ -571,8 +575,17 @@ class S02_ObliquePrism(MovingCameraScene):
                 dev_pt(run[k], seq[k]["to_base"] - 7)) for k in range(5)])
         so_dim = dim(dev_pt(0, 0), dev_pt(run[-1], 0), f"{run[-1]:.2f}", RS_COL,
                      offset=-52.0, gap=6.0, size=13)
-        check = dim(dev_pt(run[1], seq[1]["to_base"]), dev_pt(run[1], seq[1]["to_top"]),
-                    f"{AXIS:.0f}", GOLD, offset=-9.0, gap=5.0, size=12)
+        # a vertical dim() puts its figure at mid-height, which here is exactly
+        # on the stretch-out line - so this one is built by hand, outside the seam
+        check = VGroup(
+            DoubleArrow(dev_pt(-11, seq[0]["to_base"]), dev_pt(-11, seq[0]["to_top"]),
+                        buff=0, color=GOLD, stroke_width=1.6, tip_length=0.09),
+            Line(dev_pt(0, seq[0]["to_base"]), dev_pt(-13, seq[0]["to_base"]),
+                 color=MUTED, stroke_width=1.0),
+            Line(dev_pt(0, seq[0]["to_top"]), dev_pt(-13, seq[0]["to_top"]),
+                 color=MUTED, stroke_width=1.0),
+            mono(f"{AXIS:.0f}", color=GOLD, size=13).move_to(dev_pt(-20, -10.6)),
+        )
         dev_cap = caption("DEVELOPMENT", color=DEV_COL, size=17).move_to(
             dev_pt(run[-1] / 2, 62))
         development = VGroup(pattern, so, so_ticks, rays, base_line, top_line, cut_dev,
@@ -769,9 +782,10 @@ class S03_ObliqueCylinder(MovingCameraScene):
                        dash_length=0.05)
             for k in (0, 3, 6)])
         aux_cap = VGroup(
-            caption("TRUE SHAPE of the right section", color=RS_COL, size=15),
-            mono(f"an ellipse, {2 * v_semi:.2f} × {2 * u_semi:.2f}", color=RS_COL, size=13),
-        ).arrange(DOWN, buff=0.10).move_to(P2(50, 124))
+            caption("TRUE SHAPE", color=RS_COL, size=16),
+            mono("an ellipse", color=RS_COL, size=13),
+            mono(f"{2 * v_semi:.2f} × {2 * u_semi:.2f}", color=RS_COL, size=13),
+        ).arrange(DOWN, buff=0.09).move_to(P2(93, 86))
         sheet_left = VGroup(xy, views, givens, gens_fv, gens_tv, nums_tv, cut_ext,
                             cut_fv, cut_dots, ang_arc, ang_tag, rs_line, rs_mark,
                             rs_dots, projectors, aux_ell, aux_dots, aux_axes, aux_cap)
@@ -799,8 +813,15 @@ class S03_ObliqueCylinder(MovingCameraScene):
                 dev_pt(run[k], seq[k]["to_base"] - 7)) for k in range(n + 1)])
         so_dim = dim(dev_pt(0, 0), dev_pt(run[-1], 0), f"{run[-1]:.2f}", RS_COL,
                      offset=-52.0, gap=6.0, size=13)
-        check = dim(dev_pt(run[3], seq[3]["to_base"]), dev_pt(run[3], seq[3]["to_top"]),
-                    f"{AXIS:.0f}", GOLD, offset=-9.0, gap=5.0, size=12)
+        check = VGroup(
+            DoubleArrow(dev_pt(-11, seq[0]["to_base"]), dev_pt(-11, seq[0]["to_top"]),
+                        buff=0, color=GOLD, stroke_width=1.6, tip_length=0.09),
+            Line(dev_pt(0, seq[0]["to_base"]), dev_pt(-13, seq[0]["to_base"]),
+                 color=MUTED, stroke_width=1.0),
+            Line(dev_pt(0, seq[0]["to_top"]), dev_pt(-13, seq[0]["to_top"]),
+                 color=MUTED, stroke_width=1.0),
+            mono(f"{AXIS:.0f}", color=GOLD, size=13).move_to(dev_pt(-21, -10.0)),
+        )
         dev_cap = caption("DEVELOPMENT", color=DEV_COL, size=17).move_to(
             dev_pt(run[-1] / 2, 62))
         development = VGroup(pattern, so, so_ticks, rays, base_curve, top_curve,
@@ -891,31 +912,39 @@ class S04_Recap(MovingCameraScene):
         bar = title_bar("Four solids, four patterns", "Sheet 8 · how to tell which method")
         self.add(bar)
 
-        def row(solid, gens, method, colour, ep):
-            return VGroup(
-                mono(solid, color=colour, size=17).set(width=2.95),
-                mono(gens, color=SLATE, size=15).set(width=4.55),
-                mono(method, color=INK, size=16).set(width=4.35),
-                mono(ep, color=MUTED, size=14).set(width=0.95),
-            ).arrange(RIGHT, buff=0.30, aligned_edge=LEFT)
+        # A cell is text inside an invisible box of fixed height, so the columns
+        # line up row for row. set(width=...) SCALES a Text mobject - it does not
+        # pad it - so using it to size a column blows the font up with it.
+        def cell(text, colour, size):
+            t = mono(text, color=colour, size=size)
+            box = Rectangle(width=max(t.width, 0.02), height=0.40,
+                            stroke_width=0, fill_opacity=0)
+            t.move_to(box.get_left(), aligned_edge=LEFT)
+            return VGroup(box, t)
 
-        head = VGroup(
-            mono("solid", color=MUTED, size=14).set(width=1.1),
-            mono("its generators", color=MUTED, size=14).set(width=2.2),
-            mono("stretch-out line", color=MUTED, size=14).set(width=2.4),
-            mono("ep.", color=MUTED, size=14).set(width=0.5),
-        ).arrange(RIGHT, buff=0.30, aligned_edge=LEFT)
-        rows = VGroup(
-            row("right prism · cylinder", "parallel AND square to the base",
-                "the base — perimeter or πD", GOLD, "10·12"),
-            row("right cone · pyramid", "all meet the apex, all equal",
-                "a sector, 360 R/L", TEAL, "11"),
-            row("oblique cone · pyramid", "meet the apex, all different",
-                "none — triangulate face by face", VIOLET, "14"),
-            row("oblique prism · cylinder", "parallel, NOT square to the base",
-                "the RIGHT SECTION", CORAL, "16"),
-        ).arrange(DOWN, buff=0.26, aligned_edge=LEFT)
-        table = VGroup(head, rows).arrange(DOWN, buff=0.30, aligned_edge=LEFT)
+        DATA = [
+            ("solid", "its generators", "stretch-out line", "ep.", MUTED, 14),
+            ("right prism · cylinder", "parallel AND square to the base",
+             "the base — perimeter or πD", "10·12", GOLD, 15),
+            ("right cone · pyramid", "all meet the apex, all equal",
+             "a sector, 360 R/L", "11", TEAL, 15),
+            ("oblique cone · pyramid", "meet the apex, all different",
+             "none — triangulate face by face", "14", VIOLET, 15),
+            ("oblique prism · cylinder", "parallel, NOT square to the base",
+             "the RIGHT SECTION", "16", CORAL, 15),
+        ]
+        cols = []
+        for i in range(4):
+            colour_of = lambda r, i=i: (r[4] if i == 0 else
+                                        SLATE if i == 1 else
+                                        INK if i == 2 else MUTED)
+            cols.append(VGroup(*[cell(r[i], colour_of(r) if k else MUTED, r[5])
+                                 for k, r in enumerate(DATA)])
+                        .arrange(DOWN, buff=0.22, aligned_edge=LEFT))
+        table = VGroup(*cols).arrange(RIGHT, buff=0.42, aligned_edge=UP)
+        head = VGroup(*[c[0] for c in cols])
+        rows = VGroup(*[VGroup(*[c[k + 1] for c in cols]) for k in range(4)])
+        table.set(width=min(table.width, 12.4))
         table.next_to(bar, DOWN, buff=0.55).to_edge(LEFT, buff=0.7)
 
         narrate(
