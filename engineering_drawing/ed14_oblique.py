@@ -717,10 +717,9 @@ class S03_SheetB(MovingCameraScene):
             mono(f"{k + 1}₁", color=CUT_COL, size=12).move_to(
                 aux_pt(q[0] + ts_off[k][0], q[1] + ts_off[k][1], base_xz))
             for k, q in enumerate(ts)])
-        # a width dimension across a kite crosses the kite whatever you do with
-        # the offset, and carried out past the far corner it runs into the
-        # caption. The figure goes in the caption instead, where it is read.
-        w_dim = VGroup()
+        # There is no width dimension. Drawn across the kite it crosses the
+        # kite whatever you do with the offset, and carried out past the far
+        # corner it runs into the caption - so the figure goes in the caption.
         l_dim = dim(aux_pt(0, 0, base_xz), aux_pt(u_max, 0, base_xz),
                     f"{u_max:.2f}", TL_COL, offset=-18.0, gap=6.0, size=12)
         # the caption runs across the sheet, not along the cut, so it has to
@@ -731,7 +730,7 @@ class S03_SheetB(MovingCameraScene):
             mono(f"{u_max:.2f} long x {2 * abs(ts[1][1]):.2f} wide", color=TL_COL, size=13),
         ).arrange(DOWN, buff=0.10).move_to(P2(50, 70))
         aux = VGroup(refline, ref_tag, projectors, ts_poly, ts_dots, ts_tags,
-                     w_dim, l_dim, dev_tag)
+                     l_dim, dev_tag)
 
         views = VGroup(fv_out, tv_out)
         sheet = VGroup(xy, xy_tag, views, givens, plane_line, ref, ang, ang_tag,
@@ -829,7 +828,7 @@ class S03_SheetB(MovingCameraScene):
             "divided by the cosine of thirty - the one number the plan could not show "
             "you, because the section climbs as it goes.",
             Create(ts_poly), FadeIn(ts_dots), FadeIn(ts_tags), FadeIn(dev_tag),
-            FadeIn(w_dim), FadeIn(l_dim),
+            FadeIn(l_dim),
             lag_ratio=0.2,
         )
         narrate(
